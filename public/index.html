@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Visual Lab PRO v6 · CAV</title>
+<title>Visual Lab PRO v8 · CAV</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#000;--surface:#0a0a0a;--surface2:#141414;--surface3:#1a1a1a;--border:#222;--text:#e8e8e8;--text2:#888;--text3:#555;--accent:#ff3366;--accent2:#33ff88;--accent3:#3388ff;--warn:#ffaa33;--kimi:#cc77ff}
@@ -121,6 +121,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <button class="nav-btn" data-tab="vars"><span class="icon">🔀</span><span>Vars</span></button>
   <button class="nav-btn" data-tab="comp"><span class="icon">⚖️</span><span>Comp</span></button>
   <button class="nav-btn" data-tab="blocks"><span class="icon">🧱</span><span>Blocks</span></button>
+  <button class="nav-btn" data-tab="intake"><span class="icon">🧠</span><span>Intake</span></button>
   <button class="nav-btn" data-tab="settings"><span class="icon">⚙️</span><span>Config</span></button>
   <button class="nav-btn" data-tab="log"><span class="icon">📝</span><span>Log</span></button>
 </div>
@@ -373,6 +374,43 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </div>
 
 <!-- === SETTINGS === -->
+<div class="section" id="intake">
+<div class="label">INTAKE Decoder <small style="color:var(--accent3)">Ingiere caos → corrige → cataloga → prioriza → reporte</small></div>
+<textarea id="intakeInput" placeholder="Tirá todo acá. Caos bienvenido. Fragmentos, typos, ideas cruzadas, tareas, quejas, fechas, nombres, dinero..."></textarea>
+<div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0">
+  <span id="intakeMeta" style="font-size:12px;color:var(--text3)">0 chars · 0 palabras</span>
+</div>
+<div class="actions" style="margin-top:10px">
+  <button class="btn" style="background:var(--accent3);color:#fff" onclick="decodeIntake()">DECODIFICAR</button>
+  <button class="btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2)" onclick="clearIntake()">Limpiar</button>
+</div>
+<div id="intakeResult" style="display:none;margin-top:20px">
+  <div class="mixer-section">
+    <div class="mixer-section-title">📋 Clasificación <span id="intakeClassBadge" style="font-size:11px;color:var(--accent3)"></span></div>
+    <div id="intakeClass" style="font-size:13px;color:var(--text2)"></div>
+  </div>
+  <div class="mixer-section">
+    <div class="mixer-section-title">⚡ Prioridad <span id="intakePriorityBadge" style="font-size:11px;color:var(--accent3)"></span></div>
+    <div id="intakePriority" style="font-size:13px;color:var(--text2)"></div>
+  </div>
+  <div class="mixer-section">
+    <div class="mixer-section-title">📝 Tareas</div>
+    <div id="intakeTasks"></div>
+  </div>
+  <div class="mixer-section">
+    <div class="mixer-section-title">🏷️ Variables</div>
+    <div id="intakeVars"></div>
+  </div>
+  <div class="mixer-section">
+    <div class="mixer-section-title">🔍 Gaps</div>
+    <div id="intakeGaps"></div>
+  </div>
+  <div class="actions" style="margin-top:15px">
+    <button class="btn" style="background:var(--surface2);border:1px solid var(--accent3);color:var(--accent3)" onclick="copyIntake()">Copiar Reporte</button>
+  </div>
+</div>
+</div>
+
 <div class="section" id="settings">
 <span class="label">Cloud Backend</span>
 <div class="toggle-row"><div class="toggle-label">Use Cloud Mode<small>Send requests to Render backend + Kimi API</small></div><input type="checkbox" id="cloudToggle" onchange="saveCloudConfig()"></div>
@@ -2081,6 +2119,218 @@ function injectCAVPanels() {
   }
   buildCAVPanel('cav-blocks-panel', 'cav-preview-blocks');
 }
+
+/* === INTAKE DECODER ENGINE === */
+const INTAKE_STOP = new Set('el la los las un una unos unas de del al que y o en para por con sin se es son fue fui esta este esto esa ese como pero mas más ya no si sí me te le lo mi mis tu tus su sus a e u'.split(' '));
+const INTAKE_ACTIONS = 'hacer crear corregir actualizar revisar enviar llamar pagar cancelar ordenar unificar generar decodificar rellenar lavar barrer trapear contactar sacar validar preparar cambiar comprar entregar escribir redactar producir investigar buscar resolver arreglar probar auditar limpiar priorizar catalogar estructurar ingerir'.split(' ');
+const INTAKE_CORR = {q:'que',xq:'porque',pq:'porque',xfa:'por favor',tb:'también',tmb:'también',bn:'bien',maldit:'maldito',intaker:'intaker',ingere:'ingiere',inferenciacion:'inferenciación',priorizacion:'priorización',ortografia:'ortografía',catalogacion:'catalogación',automatico:'automático',automaticamente:'automáticamente',funcion:'función',revision:'revisión',accion:'acción',resumenes:'resúmenes',escenarios:'escenarios'};
+const INTAKE_TEMPLATES = {PRODUCIR:'Reporte Ejecutivo',SOLUCIONAR:'Incidente',CREAR:'Diseño de Sistema',INVESTIGAR:'Investigación',PROCESAR:'Plan de Acción',DESAHOGO:'Resumen de Contención'};
+
+function i_normalizeText(t) {
+  let s = t.replace(/\r/g,'\n').replace(/[\u201c\u201d]/g,'"').replace(/[\u2018\u2019]/g,"'").replace(/\s+/g,' ').replace(/\s*([,.;:!?])\s*/g,'$1 ').trim();
+  s = s.split(/\b/).map(function(tok){ var k=tok.toLowerCase(); return INTAKE_CORR[k] || tok; }).join('');
+  s = s.replace(/\bno se\b/gi,'no sé').replace(/\bsi\b(?=\s+(puede|hay|quieres|es))/gi,'si');
+  return s;
+}
+
+function i_segment(t) {
+  var s = i_normalizeText(t);
+  var parts = s.split(/(?:\n+|[.;!?]+|,\s*(?=(?:tengo|necesito|debo|hay|falta|no |actualiza|revisar|enviar|hacer|crear|corrige|ordena)\b)|\s+(?:y también|además|luego|después|pero|otra cosa|tambien)\s+)/i).map(function(x){ return x.trim(); }).filter(function(x){ return x.length > 2; });
+  return [...new Set(parts)].slice(0,80);
+}
+
+function i_classify(t) {
+  var l = t.toLowerCase(), s = {PRODUCIR:0,SOLUCIONAR:0,CREAR:0,INVESTIGAR:0,PROCESAR:0,DESAHOGO:0};
+  var map = {
+    PRODUCIR:'documento pdf presentación reporte entrega escribir redacta formato archivo canvas resumen ejecutivo',
+    SOLUCIONAR:'error problema falla no funciona bug urgente arreglar resolver corrige crítico bloqueo audit',
+    CREAR:'app herramienta gpt motor sistema automatización crear construir html offline función funciones',
+    INVESTIGAR:'investiga busca analiza comparar fuentes mercado por qué entender',
+    PROCESAR:'ordena resumen lista tareas plan prioridad organiza estructura actualiza unifica cataloga variables ingiere intake',
+    DESAHOGO:'cansado frustrado harto ansiedad maldito inútil mierda no puedo'
+  };
+  Object.entries(map).forEach(function(kv) {
+    kv[1].split(' ').forEach(function(x) { if (l.includes(x)) s[kv[0]] += 2; });
+  });
+  if (/no (ordena|corrige|redacta|estructura|ingiere|cataloga|ve)/.test(l)) { s['SOLUCIONAR']+=6; s['CREAR']+=4; }
+  if (/html|offline|app|archivo/.test(l) && /mejor|corrige|falta|funciones/.test(l)) s['CREAR']+=5;
+  if (/tengo que|pendiente|lunes|hoy|mañana|prioridad/.test(l)) s['PROCESAR']+=4;
+  if (/[!?]{2,}|maldito|inútil|harto|frustr/.test(t)) s['DESAHOGO']+=3;
+  var arr = Object.entries(s).sort(function(a,b){ return b[1]-a[1]; });
+  return { type: arr[0][1] ? arr[0][0] : 'PROCESAR', confidence: Math.min(97,45+arr[0][1]*6), scores: s };
+}
+
+function i_words(t) { return (t.match(/[a-záéíóúñü0-9]+/gi) || []); }
+
+function i_entities(t) {
+  var w = i_words(t);
+  var names = (t.match(/\b[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?\b/g) || []).filter(function(x){ return !['No','Para','Esto','Toma','Actualiza','Necesito','Lunes','Mayo'].includes(x); });
+  return {
+    money: t.match(/(?:\$|USD|B\/?\.)\s?\d+[\d.,]*/gi) || [],
+    dates: t.match(/\b(?:lunes|martes|miércoles|jueves|viernes|sábado|domingo|hoy|mañana|ayer|esta semana|fin de semana|final de mayo|final de mes|\d{1,2}[\/.-]\d{1,2}(?:[\/.-]\d{2,4})?|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/gi) || [],
+    emails: t.match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi) || [],
+    urls: t.match(/https?:\/\/\S+|www\.\S+/gi) || [],
+    names: [...new Set(names)].slice(0,20),
+    numbers: t.match(/\b\d+(?:[.,]\d+)?\b/g) || [],
+    systems: [...new Set((t.match(/\b(?:DHL|Banco General|Banco Nacional|HTML|PDF|API|IndexedDB|Web Speech|iPhone|Kimi|Open Claw|GPT)\b/gi) || []))],
+    keywords: i_topKeywords(t)
+  };
+}
+
+function i_topKeywords(t) {
+  var freq = {};
+  i_words(t).map(function(x){ return x.toLowerCase(); }).filter(function(x){ return x.length > 3 && !INTAKE_STOP.has(x); }).forEach(function(x){ freq[x] = (freq[x] || 0) + 1; });
+  return Object.entries(freq).sort(function(a,b){ return b[1]-a[1]; }).slice(0,12).map(function(x){ return x[0]; });
+}
+
+function i_catalogVariables(t, segs, ent) {
+  var vars = [];
+  var add = function(type, value, source, conf) { if (value && !vars.some(function(v){ return v.type === type && v.value === value; })) vars.push({type, value, source, confidence: conf || 80}); };
+  ent.money.forEach(function(x){ add('dinero', x, 'regex', 95); });
+  ent.dates.forEach(function(x){ add('fecha/plazo', x, 'regex', 92); });
+  ent.names.forEach(function(x){ add('persona/entidad', x, 'mayúsculas', 70); });
+  ent.systems.forEach(function(x){ add('sistema', x, 'diccionario', 90); });
+  ent.emails.forEach(function(x){ add('email', x, 'regex', 98); });
+  ent.urls.forEach(function(x){ add('url', x, 'regex', 98); });
+  segs.forEach(function(s){
+    var l = s.toLowerCase();
+    if (/no (ordena|corrige|redacta|estructura|ingiere|cataloga|ve|funciona)/.test(l)) add('falla funcional', s[0].toUpperCase() + s.slice(1), 'negación explícita', 94);
+    if (/falta|le hace falta|necesita/.test(l)) add('requisito faltante', s[0].toUpperCase() + s.slice(1), 'necesidad explícita', 88);
+    if (/prioridad|urgente|primero|vencer|lunes|hoy|mañana/.test(l)) add('prioridad/plazo', s[0].toUpperCase() + s.slice(1), 'señal temporal', 84);
+  });
+  return vars;
+}
+
+function i_priorityScore(s, ent) {
+  var l = s.toLowerCase(), score = 10, reasons = [];
+  var hit = function(re, n, r) { if (re.test(l)) { score += n; reasons.push(r); } };
+  hit(/urgente|crítico|ya|ahora|bloquea|no funciona|maldito|inútil|falla|error/, 35, 'bloqueo/urgencia');
+  hit(/hoy|mañana|lunes|martes|miércoles|jueves|viernes|vencer|plazo|final de mes|final de mayo/, 25, 'fecha cercana');
+  hit(/cliente|dhl|banco|pago|deuda|auto|trabajo|producción|pdf|archivo/, 20, 'impacto externo/financiero');
+  hit(/no (ordena|corrige|redacta|estructura|ingiere|cataloga|ve)/, 30, 'función central rota');
+  hit(/prioridad|primero|seguimiento|pendiente/, 12, 'gestión explícita');
+  return { score: Math.min(100, score), reasons: reasons };
+}
+
+function i_makeTasks(segs, ent) {
+  var tasks = [];
+  segs.forEach(function(s, i){
+    var l = s.toLowerCase();
+    var hasAction = INTAKE_ACTIONS.some(function(a){ return new RegExp('\\b'+a+'\\b','i').test(l); }) || /no (ordena|corrige|redacta|estructura|ingiere|cataloga|ve)/.test(l);
+    if (!hasAction && s.length < 14) return;
+    var verb = INTAKE_ACTIONS.find(function(a){ return new RegExp('\\b'+a+'\\b','i').test(l); }) || (/no /.test(l) ? 'corregir' : 'procesar');
+    var obj = s.replace(new RegExp('^.*?\\b'+verb+'\\b','i'),'').trim() || s;
+    var sc = i_priorityScore(s, ent).score;
+    var pr = sc >= 65 ? 'P1' : sc >= 35 ? 'P2' : 'P3';
+    tasks.push({ id: i+1, raw: s, action: verb, object: obj.replace(/^que\s+/i,''), priority: pr, score: sc, category: i_taskCat(s), due: i_inferDue(s, ent), status: 'pendiente' });
+  });
+  if (!tasks.length && segs.length) tasks.push({ id: 1, raw: segs[0], action: 'procesar', object: segs[0], priority: 'P2', score: 45, category: 'general', due: 'no definido', status: 'pendiente' });
+  return tasks.sort(function(a,b){ return b.score - a.score; });
+}
+
+function i_taskCat(s) {
+  var l = s.toLowerCase();
+  if (/banco|pago|deuda|auto|préstamo|prestamo/.test(l)) return 'finanzas';
+  if (/dhl|trabajo|proyecto|requirements|recursos humanos|rrhh/.test(l)) return 'trabajo';
+  if (/html|app|motor|sistema|función|offline|intake/.test(l)) return 'producto/sistema';
+  if (/lavar|barrer|trapear|inodoro|ropa/.test(l)) return 'casa';
+  if (/pdf|documento|reporte|canvas/.test(l)) return 'entregable';
+  return 'general';
+}
+
+function i_inferDue(s, ent) {
+  var d = s.match(/\b(lunes|martes|miércoles|jueves|viernes|sábado|domingo|hoy|mañana|fin de semana|final de mayo|final de mes|\d{1,2}[\/.-]\d{1,2}(?:[\/.-]\d{2,4})?)\b/i);
+  return d ? d[0] : 'no definido';
+}
+
+function i_findGaps(o) {
+  var g = [];
+  var add = function(id, msg, sug, val, conf) { g.push({ id, message: msg, suggestion: sug, autofill: val, confidence: conf || 70 }); };
+  var l = o.input.toLowerCase(), has = function(a) { return a.some(function(x){ return l.includes(x); }); };
+  if (!has(['prioridad','urgente','alta','media','baja','primero'])) add('priority','Prioridad no definida','Inferir prioridad por urgencia/impacto/plazo','Prioridad inferida: '+o.priority.level+'. Criterio: '+o.priority.method+'.',90);
+  if (!o.entities.dates.length) add('due','Plazo global ausente','Usar plazo por tarea y marcar validación','Plazo global: no definido. Mantener tareas sin fecha como backlog y pedir fecha solo si bloquea ejecución.',62);
+  if (!has(['audiencia','usuario final','quién usa','lector'])) add('audience','Audiencia/usuario final no definido','Inferir usuario operativo','Usuario final inferido: persona que pega/dicta caos y necesita una salida ejecutable sin editar demasiado.',76);
+  if (o.classification.type === 'CREAR' && !has(['restricción','offline','api','dependencia','local'])) add('constraints','Restricciones incompletas','Inferir restricciones de producto offline','Restricciones inferidas: single-file, offline, sin APIs, sin dependencias externas, tolerante a dictado y typos.',86);
+  if (o.tasks.some(function(x){ return x.due === 'no definido'; })) add('task_due','Hay tareas sin fecha','Marcar como backlog ordenado por prioridad','Tareas sin fecha: mantener orden por P1/P2/P3 y pedir fecha únicamente para P1.',78);
+  if (o.variables.length < 3) add('variables','Pocas variables detectadas','Forzar catálogo mínimo','Variables mínimas: actor, acción, objeto, plazo, prioridad, estado.',66);
+  if (!has(['criterio','orden','prioridad','impacto'])) add('ordering','Criterio de orden no explícito','Aplicar regla estándar','Orden aplicado: P1 bloqueo/fecha/impacto externo → P2 importante → P3 mantenimiento.',85);
+  return g;
+}
+
+function i_buildReport(o) {
+  var taskMd = o.tasks.map(function(t){
+    return '- ['+t.priority+'] '+t.action.toUpperCase()+': '+t.object+'\n  - Categoría: '+t.category+'\n  - Plazo: '+t.due+'\n  - Score: '+t.score+'/100';
+  }).join('\n');
+  var varMd = o.variables.map(function(v){ return '- '+v.type+': '+v.value+' ('+v.confidence+'%)'; }).join('\n') || '- Sin variables suficientes';
+  var gapMd = o.gaps.map(function(g){ return '- '+g.message+'\n  - Relleno: '+g.autofill+'\n  - Confianza: '+g.confidence+'%'; }).join('\n') || '- Sin gaps críticos';
+  return '# INTAKE REPORT v2\n\n## 1. Clasificación\n- Tipo: '+o.classification.type+'\n- Confianza: '+o.classification.confidence+'%\n- Template: '+o.template+'\n\n## 2. Prioridad automática\n- Nivel: '+o.priority.level+'\n- Score: '+o.priority.score+'/100\n\n## 3. Núcleo priorizado\n'+o.core.map(function(x,i){ return (i+1)+'. '+x; }).join('\n')+'\n\n## 4. Tareas catalogadas\n'+taskMd+'\n\n## 5. Variables detectadas\n'+varMd+'\n\n## 6. Gaps rellenados\n'+gapMd+'\n\n## 7. Entidades\n- Dinero: '+(o.entities.money.join(', ')||'—')+'\n- Fechas: '+(o.entities.dates.join(', ')||'—')+'\n- Keywords: '+(o.entities.keywords.join(', ')||'—');
+}
+
+var INTAKE_LAST = null;
+
+function decodeIntake() {
+  var raw = document.getElementById('intakeInput').value.trim();
+  if (!raw) { showToast('Input vacío'); return; }
+  var segs = i_segment(raw);
+  var cls = i_classify(raw);
+  var ent = i_entities(raw);
+  var vars = i_catalogVariables(raw, segs, ent);
+  var tasks = i_makeTasks(segs, ent);
+  var priority = { level: (tasks[0]?.score || 45) >= 65 ? 'ALTA' : (tasks[0]?.score || 45) >= 35 ? 'MEDIA' : 'BAJA', score: tasks[0]?.score || 45, method: 'urgencia + fecha + impacto + bloqueo' };
+  var core = tasks.slice(0,3).map(function(t){ return t.priority+' — '+t.action+': '+t.object; });
+  INTAKE_LAST = { input: raw, classification: cls, template: INTAKE_TEMPLATES[cls.type], priority: priority, tasks: tasks, variables: vars, entities: ent, core: core, gaps: [] };
+  INTAKE_LAST.gaps = i_findGaps(INTAKE_LAST);
+  renderIntake();
+  showToast('Ordenado, corregido, catalogado e inferenciado');
+}
+
+function renderIntake() {
+  if (!INTAKE_LAST) return;
+  var o = INTAKE_LAST;
+  document.getElementById('intakeResult').style.display = 'block';
+  document.getElementById('intakeClassBadge').textContent = o.classification.type + ' · ' + o.classification.confidence + '%';
+  document.getElementById('intakeClass').innerHTML = '<b>Tipo:</b> ' + o.classification.type + '<br><b>Template:</b> ' + o.template + '<br><b>Confianza:</b> ' + o.classification.confidence + '%';
+  document.getElementById('intakePriorityBadge').textContent = o.priority.level + ' · ' + o.priority.score + '/100';
+  document.getElementById('intakePriority').innerHTML = '<b>Nivel:</b> ' + o.priority.level + '<br><b>Score:</b> ' + o.priority.score + '/100<br><b>Método:</b> ' + o.priority.method;
+  document.getElementById('intakeTasks').innerHTML = o.tasks.map(function(t){
+    var color = t.priority === 'P1' ? 'var(--accent)' : t.priority === 'P2' ? 'var(--warn)' : 'var(--accent2)';
+    return '<div style="border-left:3px solid ' + color + ';padding:8px 12px;margin:6px 0;background:var(--surface);border-radius:8px">' +
+      '<div style="font-weight:700;font-size:13px">' + t.priority + ' · ' + t.action.toUpperCase() + '</div>' +
+      '<div style="font-size:12px;color:var(--text2)">' + t.object + '</div>' +
+      '<div style="font-size:11px;color:var(--text3)">Cat=' + t.category + ' · Plazo=' + t.due + ' · Score=' + t.score + '</div>' +
+      '</div>';
+  }).join('');
+  document.getElementById('intakeVars').innerHTML = o.variables.map(function(v){
+    return '<div style="display:inline-block;padding:4px 10px;margin:3px;background:var(--surface2);border-radius:12px;font-size:12px">' + v.type + ': <b>' + v.value + '</b> <span style="color:var(--text3)">' + v.confidence + '%</span></div>';
+  }).join('');
+  document.getElementById('intakeGaps').innerHTML = o.gaps.map(function(g){
+    return '<div style="border:1px dashed var(--border);padding:8px 12px;margin:6px 0;background:var(--surface);border-radius:8px">' +
+      '<div style="font-weight:700;font-size:13px">' + g.message + '</div>' +
+      '<div style="font-size:11px;color:var(--text3)">' + g.suggestion + '</div>' +
+      '<div style="font-size:12px;color:var(--text2);margin-top:4px">' + g.autofill + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function clearIntake() {
+  INTAKE_LAST = null;
+  document.getElementById('intakeInput').value = '';
+  document.getElementById('intakeResult').style.display = 'none';
+  document.getElementById('intakeMeta').textContent = '0 chars · 0 palabras';
+  showToast('Intake limpiado');
+}
+
+function copyIntake() {
+  if (!INTAKE_LAST) { showToast('Primero decodifica'); return; }
+  var report = i_buildReport(INTAKE_LAST);
+  navigator.clipboard.writeText(report).then(function(){ showToast('Reporte copiado'); });
+}
+
+document.getElementById('intakeInput').addEventListener('input', function(){
+  var t = this.value;
+  var w = i_words(t).length;
+  document.getElementById('intakeMeta').textContent = t.length + ' chars · ' + w + ' palabras';
+});
 
 injectCAVCSS();
 </script>
