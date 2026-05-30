@@ -93,11 +93,25 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .mixer-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
 .mixer-preview{font-size:11px;font-family:monospace;color:var(--text3);background:var(--surface2);border-radius:6px;padding:8px;margin-top:6px;min-height:32px;max-height:70px;overflow-y:auto;line-height:1.5}
 .blocks-badge{display:inline-block;background:#ff9933;color:#000;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;margin-left:4px}
+/* v8 additions */
+.chip.fav{background:var(--surface3);border-color:var(--warn);color:var(--warn)}
+.duo-grid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.duo-chip{padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;font-size:12px;cursor:pointer;color:var(--text2);font-weight:500}
+.duo-chip:hover{border-color:var(--accent);color:var(--accent)}
+.group-dynamics{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px}
+.q-btn{padding:8px 14px;background:var(--surface2);border:1px solid var(--accent);border-radius:10px;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer}
+.import-area{display:none;margin:12px 0}
+.import-area textarea{width:100%;min-height:120px;font-size:12px;font-family:monospace}
+.export-btns{display:flex;gap:8px;margin:8px 0}
+.export-btns button{flex:1;padding:10px;font-size:12px;font-weight:700;border:none;border-radius:10px;cursor:pointer}
+.btn-export{background:var(--surface2);border:1px solid var(--accent3);color:var(--accent3)}
+.btn-import{background:var(--surface2);border:1px solid var(--accent);color:var(--accent)}
+.cloud-btn{padding:10px 16px;background:var(--surface2);border:1px solid var(--kimi);border-radius:10px;color:var(--kimi);font-size:12px;font-weight:700;cursor:pointer;margin:8px 0}
 </style>
 </head>
 <body>
 <div class="header">
-  <div><h1>Visual Lab PRO</h1><div class="badge">Blocks x MJ 8.1 v6 · CAV</div></div>
+  <div><h1>Visual Lab PRO</h1><div class="badge">Blocks x MJ 8.1 v8 · CAV</div></div>
 </div>
 
 <div class="bottom-nav">
@@ -160,8 +174,24 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <div class="section" id="builder">
 <span class="label">6-Section Constructor</span>
 <div class="builder-help">Each section builds a block. Kimi assembles with optimal hierarchy.</div>
+<div class="duo-grid" id="duoPresets">
+<div class="duo-chip" onclick="loadDuoPreset('Anya + Tessa')">Anya + Tessa</div>
+<div class="duo-chip" onclick="loadDuoPreset('Zoe + Gal')">Zoe + Gal</div>
+<div class="duo-chip" onclick="loadDuoPreset('Scarlett + Brie')">Scarlett + Brie</div>
+<div class="duo-chip" onclick="loadDuoPreset('Lupita + Danai')">Lupita + Danai</div>
+<div class="duo-chip" onclick="loadDuoPreset('Margot + Karen')">Margot + Karen</div>
+<div class="duo-chip" onclick="loadDuoPreset('Charlize + Rebecca')">Charlize + Rebecca</div>
+<div class="duo-chip" onclick="loadDuoPreset('Ana + Alexandra')">Ana + Alexandra</div>
+<div class="duo-chip" onclick="loadDuoPreset('Kate + Milla')">Kate + Milla</div>
+<div class="duo-chip" onclick="loadDuoPreset('Random Duo')">🎲 Random</div>
+</div>
+<div class="inline-control" style="margin-top:8px">
+<span style="min-width:auto">Count:</span><select id="subjQty" onchange="updateSubjFields(); updateGroupDynamics();"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+<span style="flex:1"></span>
+<button class="q-btn" onclick="randomCombo()">🎲 Random Combo</button>
+</div>
 <div class="category" id="sec-A"><div class="category-title">A. Subjects <span class="toggle-btn" onclick="toggleCat('sec-A')">−</span></div><div class="cat-body">
-<div class="inline-control"><span>Qty:</span><select id="subjQty" onchange="updateSubjFields()"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+<div class="inline-control"><span>Qty:</span><select id="subjQty" onchange="updateSubjFields(); updateGroupDynamics();"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
 <div id="subj1-block">
 <div class="inline-control"><span>Actress 1:</span><select id="subj1Actress"></select></div>
 <div class="inline-control"><span>Character 1:</span><select id="subj1Char"><option>Original</option><option>Wonder Woman</option><option>Supergirl</option><option>Batgirl</option><option>Harley Quinn</option><option>Catwoman</option><option>Raven</option><option>Black Widow</option><option>Storm</option></select></div>
@@ -169,6 +199,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <div id="subj2-block" style="display:none">
 <div class="inline-control"><span>Actress 2:</span><select id="subj2Actress"></select></div>
 <div class="inline-control"><span>Character 2:</span><select id="subj2Char"><option>Original</option><option>Wonder Woman</option><option>Supergirl</option><option>Batgirl</option><option>Harley Quinn</option><option>Catwoman</option><option>Raven</option><option>Black Widow</option><option>Storm</option></select></div>
+</div>
+<div id="subj3-block" style="display:none">
+<div class="inline-control"><span>Actress 3:</span><select id="subj3Actress"></select></div>
+<div class="inline-control"><span>Character 3:</span><select id="subj3Char"><option>Original</option><option>Wonder Woman</option><option>Supergirl</option><option>Batgirl</option><option>Harley Quinn</option><option>Catwoman</option><option>Raven</option><option>Black Widow</option><option>Storm</option></select></div>
+</div>
+<div id="subj4-block" style="display:none">
+<div class="inline-control"><span>Actress 4:</span><select id="subj4Actress"></select></div>
+<div class="inline-control"><span>Character 4:</span><select id="subj4Char"><option>Original</option><option>Wonder Woman</option><option>Supergirl</option><option>Batgirl</option><option>Harley Quinn</option><option>Catwoman</option><option>Raven</option><option>Black Widow</option><option>Storm</option></select></div>
 </div>
 <div class="inline-control"><span>Physique:</span><select id="subjPhys"><option>Brutal defined</option><option>Athletic</option><option>Curves</option></select></div>
 <div class="inline-control"><span>Torso ratio:</span><select id="subjRatio"><option>70:30</option><option>65:35</option><option>75:25</option></select></div>
@@ -186,6 +224,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <div class="inline-control"><span>Contact:</span><select id="intContact"><option>No contact</option><option>Shoulders touching</option><option>Hands linked</option><option>Arms crossed</option><option>Weapons crossed</option></select></div>
 <div class="inline-control"><span>Gaze:</span><select id="intGaze"><option>Camera</option><option>Between them</option><option>Profile</option><option>Closed</option><option>Upward</option></select></div>
 <div class="inline-control"><span>Expression:</span><select id="intExpr"><option>Serene</option><option>Exhausted</option><option>Competitive</option><option>Maniacal</option><option>Predatory</option><option>Defiant</option><option>Mournful</option></select></div>
+<div class="group-dynamics" id="groupDynamics" style="display:none">
+<div class="category-title">Group Dynamics (3+)</div>
+<div class="inline-control"><span>Formation:</span><select id="gdFormation"><option>Line</option><option>Triangle</option><option>V-shape</option><option>Circle</option><option>Pyramid</option><option>Scatter</option></select></div>
+<div class="inline-control"><span>Leader:</span><select id="gdLeader"><option>Center</option><option>Left</option><option>Right</option><option>Front</option><option>None</option></select></div>
+<div class="inline-control"><span>Energy:</span><select id="gdEnergy"><option>United</option><option>Rival</option><option>Family</option><option>Team</option><option>Chaos</option></select></div>
+</div>
 </div></div>
 <div class="category" id="sec-D"><div class="category-title">D. Background <span class="toggle-btn" onclick="toggleCat('sec-D')">−</span></div><div class="cat-body">
 <div class="inline-control"><span>Environment:</span><select id="bgEnv"><option>Void</option><option>Desert</option><option>Gym</option><option>City night</option><option>Tundra</option><option>Interior</option><option>Space station</option><option>Rain street</option><option>Industrial</option><option>Forest</option><option>Beach</option><option>Rooftop</option></select></div>
@@ -206,6 +250,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </div></div>
 <div class="sticky-actions">
 <button class="btn btn-kimi-generate" onclick="buildFromBuilder()">Kimi Build Prompt →</button>
+<button class="btn btn-generate" onclick="enhancePrompt()" style="margin-top:8px">✨ Kimi Enhance</button>
 </div>
 <div id="builderResult"></div>
 </div>
@@ -239,6 +284,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <div class="section" id="blocks">
 <span class="label">Block Library <span class="blocks-badge">NEW v5</span></span>
 <div id="blockList"></div>
+<div class="export-btns">
+  <button class="btn-export" onclick="exportBlocks()">⬇️ Export Blocks</button>
+  <button class="btn-import" onclick="document.getElementById('importArea').style.display='block'">⬆️ Import Blocks</button>
+</div>
+<div class="import-area" id="importArea">
+  <textarea id="importAreaText" placeholder="Paste JSON array of blocks here..."></textarea>
+  <button class="btn btn-generate" onclick="confirmImport()" style="width:100%;margin-top:8px">Import</button>
+</div>
 
 <span class="label">Import Block</span>
 <textarea id="blockImport" placeholder="Paste complete Midjourney prompt here..." style="min-height:90px;"></textarea>
@@ -336,6 +389,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </div>
 <span class="label">Connection Test</span>
 <button class="btn btn-kimi" onclick="testConnection()" style="width:100%">Test Connection →</button>
+<button class="cloud-btn" onclick="showCloudSettings()" style="width:100%">☁️ Cloud Sync Settings</button>
 <div id="connResult" style="margin-top:12px"></div>
 </div>
 
@@ -353,7 +407,16 @@ var ACTRESSES = [
   'Jurnee Smollett','Aldis Hodge','Rosario Dawson','Gabrielle Union','Thandiwe Newton',
   'Ruth Negga','Sonequa Martin-Green','Jessica Henwick','Rosalind Pike','Noomi Rapace',
   'Sofia Boutella','Caity Lotz','Candice Patton','Danielle Panabaker','Hartley Sawyer',
-  'Violett Beane','Jessica Camacho','Anne Dudek','Allison Paige','Britne Oldford','Emily Kinney'
+  'Violett Beane','Jessica Camacho','Anne Dudek','Allison Paige','Britne Oldford','Emily Kinney',
+  'Ana de Armas','Alexandra Daddario','Kate Beckinsale','Milla Jovovich','Olivia Wilde',
+  'Emily Blunt','Zendaya','Florence Kasumba','Mackenzie Davis','Lena Headey',
+  'Carrie-Anne Moss','Sigourney Weaver','Uma Thurman','Linda Hamilton','Kate Winslet',
+  'Natalie Portman','Keira Knightley','Anne Hathaway','Zoe Kravitz','Teyonah Parris',
+  'Rachel Weisz','Marion Cotillard','Penelope Cruz','Monica Bellucci','Sophie Marceau',
+  'Eva Mendes','Paula Patton','Meagan Good','Regina Hall','Sanaa Lathan',
+  'Nia Long','Kimberly Elise','Lynn Whitfield','Alfre Woodard','Cicely Tyson',
+  'Diahann Carroll','Ruby Dee','Vanessa Williams','Chloe Bailey','Halle Bailey',
+  'Amandla Stenberg','Zazie Beetz','Dominique Fishback','Issa Rae','Keke Palmer'
 ];
 
 var ACTRESS_DESC = {
@@ -412,7 +475,52 @@ var ACTRESS_DESC = {
   'Anne Dudek':'blonde, intelligent physicality',
   'Allison Paige':'speedster body',
   'Britne Oldford':'long athletic',
-  'Emily Kinney':'dancer body, blonde'
+  'Emily Kinney':'dancer body, blonde',
+  'Ana de Armas':'Cuban-Spanish, doe-eyed intensity',
+  'Alexandra Daddario':'Mediterranean, striking eyes',
+  'Kate Beckinsale':'British, vampiric elegance',
+  'Milla Jovovich':'Ukrainian, action-hero physique',
+  'Olivia Wilde':'sharp features, piercing gaze',
+  'Emily Blunt':'British, commanding presence',
+  'Zendaya':'tall elegant, modern royalty',
+  'Florence Kasumba':'tall warrior, commanding presence',
+  'Mackenzie Davis':'tall athletic, angular strength',
+  'Lena Headey':'British, ruthless elegance',
+  'Carrie-Anne Moss':'athletic, iconic sci-fi warrior',
+  'Sigourney Weaver':'legendary action presence, towering',
+  'Uma Thurman':'tall blonde, martial grace',
+  'Linda Hamilton':'terminator-hardened intensity',
+  'Kate Winslet':'English, strong-boned beauty',
+  'Natalie Portman':'petite, dark intense eyes',
+  'Keira Knightley':'British, angular elegance',
+  'Anne Hathaway':'dark-haired, wide expressive eyes',
+  'Zoe Kravitz':'tight build, alt-edge beauty',
+  'Teyonah Parris':'regal strength, stage presence',
+  'Rachel Weisz':'British, dark-eyed elegance',
+  'Marion Cotillard':'French, smoky depth',
+  'Penelope Cruz':'Spanish fire, dark curves',
+  'Monica Bellucci':'Italian timeless, dark goddess',
+  'Sophie Marceau':'French, Bond-girl elegance',
+  'Eva Mendes':'Cuban-American, smoldering presence',
+  'Paula Patton':'athletic frame, warm presence',
+  'Meagan Good':'compact power, expressive',
+  'Regina Hall':'comedic agility, strong form',
+  'Sanaa Lathan':'elegant strength, graceful',
+  'Nia Long':'effortless beauty, enduring presence',
+  'Kimberly Elise':'intense dramatic presence',
+  'Lynn Whitfield':'regal maturity, commanding grace',
+  'Alfre Woodard':'wise power, maternal warrior',
+  'Cicely Tyson':'legendary dignity, ageless force',
+  'Diahann Carroll':'pioneering elegance, timeless glamour',
+  'Ruby Dee':'soulful grace, activist fire',
+  'Vanessa Williams':'pageant perfection, triple-threat talent',
+  'Chloe Bailey':'R&B athleticism, youthful power',
+  'Halle Bailey':'ethereal voice, delicate strength',
+  'Amandla Stenberg':'androgynous beauty, activist spirit',
+  'Zazie Beetz':'Afro-German, cool athleticism',
+  'Dominique Fishback':'expressive intensity, poetic presence',
+  'Issa Rae':'Awkward Black Girl energy, tall grace',
+  'Keke Palmer':'comedic athleticism, boundless energy'
 };
 
 var PRESETS = {
@@ -706,19 +814,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var sel1 = document.getElementById('subj1Actress');
   var sel2 = document.getElementById('subj2Actress');
+  var sel3 = document.getElementById('subj3Actress');
+  var sel4 = document.getElementById('subj4Actress');
   for (var a = 0; a < ACTRESSES.length; a++) {
     var opt1 = document.createElement('option'); opt1.textContent = ACTRESSES[a]; opt1.value = ACTRESSES[a]; sel1.appendChild(opt1);
     var opt2 = document.createElement('option'); opt2.textContent = ACTRESSES[a]; opt2.value = ACTRESSES[a]; sel2.appendChild(opt2);
+    if (sel3) { var opt3 = document.createElement('option'); opt3.textContent = ACTRESSES[a]; opt3.value = ACTRESSES[a]; sel3.appendChild(opt3); }
+    if (sel4) { var opt4 = document.createElement('option'); opt4.textContent = ACTRESSES[a]; opt4.value = ACTRESSES[a]; sel4.appendChild(opt4); }
   }
 
-  var actGrid = document.getElementById('actressChips');
-  for (var ai = 0; ai < ACTRESSES.length; ai++) {
-    var d = document.createElement('div');
-    d.className = 'chip' + (ai < 4 ? ' active' : '');
-    d.textContent = ACTRESSES[ai];
-    d.onclick = function() { this.classList.toggle('active'); };
-    actGrid.appendChild(d);
-  }
+  renderActressChips();
 
   var clothGrid = document.getElementById('clothingChips');
   for (var ci = 0; ci < PRESETS.clothing.length; ci++) {
@@ -782,7 +887,8 @@ document.addEventListener('DOMContentLoaded', function() {
   updateBlockSelectors();
   if (blocks.length > 0) document.getElementById('mixerPanel').style.display = 'block';
 
-  showToast('Visual Lab PRO v5 · Blocks ready');
+  showToast('Visual Lab PRO v8 · Blocks ready');
+  setTimeout(injectCAVPanels, 100);
 });
 
 function switchTab(tab) {
@@ -814,6 +920,10 @@ function updateSubjFields() {
   var qty = parseInt(document.getElementById('subjQty').value);
   var block2 = document.getElementById('subj2-block');
   if (block2) block2.style.display = qty >= 2 ? 'block' : 'none';
+  var block3 = document.getElementById('subj3-block');
+  if (block3) block3.style.display = qty >= 3 ? 'block' : 'none';
+  var block4 = document.getElementById('subj4-block');
+  if (block4) block4.style.display = qty >= 4 ? 'block' : 'none';
 }
 
 function updateArtifacts() {
@@ -1509,6 +1619,247 @@ var CAV_RECIPES = {
   ]
 };
 
+// ===== FAVORITES =====
+var FAV_ACTRESSES_KEY = 'vlpro_fav_actresses';
+var favActresses = JSON.parse(localStorage.getItem(FAV_ACTRESSES_KEY) || '[]');
+
+function toggleFavActress(name) {
+  var idx = favActresses.indexOf(name);
+  if (idx === -1) favActresses.push(name); else favActresses.splice(idx, 1);
+  localStorage.setItem(FAV_ACTRESSES_KEY, JSON.stringify(favActresses));
+  renderActressChips();
+}
+
+function isFavActress(name) { return favActresses.indexOf(name) !== -1; }
+
+function renderActressChips() {
+  var grid = document.getElementById('actressChips');
+  if (!grid) return;
+  grid.innerHTML = '';
+  var sorted = ACTRESSES.slice().sort(function(a,b) {
+    var fa = isFavActress(a), fb = isFavActress(b);
+    return fa === fb ? a.localeCompare(b) : (fa ? -1 : 1);
+  });
+  sorted.forEach(function(name) {
+    var d = document.createElement('div');
+    d.className = 'chip' + (isFavActress(name) ? ' fav' : '');
+    d.textContent = name;
+    d.onclick = function() { this.classList.toggle('active'); };
+    var star = document.createElement('span');
+    star.textContent = isFavActress(name) ? '\u2605' : '\u2606';
+    star.style.marginLeft = '4px';
+    star.style.cursor = 'pointer';
+    star.onclick = function(e) { e.stopPropagation(); toggleFavActress(name); };
+    d.appendChild(star);
+    grid.appendChild(d);
+  });
+}
+
+// ===== DUO PRESETS =====
+var DUO_PRESETS = {
+  'Anya + Tessa': {actresses:['Anya Taylor-Joy','Tessa Thompson'],chars:['Original','Original']},
+  'Zoe + Gal': {actresses:['Zoe Saldana','Gal Gadot'],chars:['Original','Original']},
+  'Scarlett + Brie': {actresses:['Scarlett Johansson','Brie Larson'],chars:['Original','Original']},
+  'Lupita + Danai': {actresses:['Lupita Nyongo','Danai Gurira'],chars:['Original','Original']},
+  'Margot + Karen': {actresses:['Margot Robbie','Karen Gillan'],chars:['Original','Original']},
+  'Charlize + Rebecca': {actresses:['Charlize Theron','Rebecca Ferguson'],chars:['Original','Original']},
+  'Ana + Alexandra': {actresses:['Ana de Armas','Alexandra Daddario'],chars:['Original','Original']},
+  'Kate + Milla': {actresses:['Kate Beckinsale','Milla Jovovich'],chars:['Original','Original']},
+  'Random Duo': {actresses:['RANDOM','RANDOM'],chars:['Original','Original']}
+};
+
+function loadDuoPreset(name) {
+  var preset = DUO_PRESETS[name];
+  if (!preset) return;
+  document.getElementById('subjQty').value = '2';
+  updateSubjFields();
+  updateGroupDynamics();
+  if (name === 'Random Duo') {
+    var a1 = ACTRESSES[Math.floor(Math.random()*ACTRESSES.length)];
+    var a2 = ACTRESSES[Math.floor(Math.random()*ACTRESSES.length)];
+    while(a2===a1) a2 = ACTRESSES[Math.floor(Math.random()*ACTRESSES.length)];
+    document.getElementById('subj1Actress').value = a1;
+    document.getElementById('subj2Actress').value = a2;
+  } else {
+    document.getElementById('subj1Actress').value = preset.actresses[0];
+    document.getElementById('subj2Actress').value = preset.actresses[1];
+  }
+  showToast('Loaded: ' + name);
+}
+
+// ===== RANDOM COMBO =====
+function randomCombo() {
+  var qty = 2 + Math.floor(Math.random()*3); // 2-4
+  document.getElementById('subjQty').value = qty;
+  updateSubjFields();
+  updateGroupDynamics();
+  var picks = [];
+  for (var i=0; i<qty; i++) {
+    var a = ACTRESSES[Math.floor(Math.random()*ACTRESSES.length)];
+    while(picks.indexOf(a)!==-1) a = ACTRESSES[Math.floor(Math.random()*ACTRESSES.length)];
+    picks.push(a);
+    document.getElementById('subj'+(i+1)+'Actress').value = a;
+  }
+  showToast('Random combo: ' + picks.join(', '));
+}
+
+// ===== GROUP DYNAMICS =====
+function updateGroupDynamics() {
+  var qty = parseInt(document.getElementById('subjQty').value);
+  var gd = document.getElementById('groupDynamics');
+  if (gd) gd.style.display = qty >= 3 ? 'block' : 'none';
+}
+
+// ===== EXPORT/IMPORT BLOCKS =====
+function exportBlocks() {
+  var data = JSON.stringify(blocks, null, 2);
+  var blob = new Blob([data], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vlpro-blocks-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showToast('Blocks exported');
+}
+
+function confirmImport() {
+  var raw = document.getElementById('importAreaText').value.trim();
+  try {
+    var imported = JSON.parse(raw);
+    if (!Array.isArray(imported)) throw new Error('Not an array');
+    blocks = imported.concat(blocks);
+    localStorage.setItem(BLOCKS_KEY, JSON.stringify(blocks));
+    renderBlockList();
+    updateBlockSelectors();
+    document.getElementById('importAreaText').value = '';
+    document.getElementById('importArea').style.display = 'none';
+    showToast('Imported ' + imported.length + ' blocks');
+  } catch(e) { showToast('Invalid JSON: ' + e.message); }
+}
+
+// ===== CLOUD SYNC / BACKEND INTEGRATION =====
+var BACKEND_URL = localStorage.getItem('vlpro_backend_url') || 'https://visual-lab-pro-v8.onrender.com';
+var API_SECRET = localStorage.getItem('vlpro_api_secret') || '';
+var USER_ID = localStorage.getItem('vlpro_user_id') || 'user_' + Math.random().toString(36).slice(2, 10);
+
+function api(endpoint, method, body) {
+  method = method || 'GET';
+  var opts = { method: method, headers: { 'Content-Type': 'application/json', 'X-API-Secret': API_SECRET, 'X-User-ID': USER_ID } };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(BACKEND_URL + endpoint, opts).then(function(r) { return r.ok ? r.json() : Promise.reject(r.statusText); });
+}
+
+function syncBlocksToCloud() {
+  if (!API_SECRET) { showToast('No API secret'); return; }
+  var localBlocks = JSON.parse(localStorage.getItem(BLOCKS_KEY) || '[]');
+  api('/api/blocks').then(function(cloudBlocks) {
+    var toUpload = localBlocks.filter(function(b) { return !b.cloud_id; });
+    if (toUpload.length === 0) { showToast('All synced'); return; }
+    Promise.all(toUpload.map(function(b) {
+      return api('/api/blocks', 'POST', b).then(function(res) { b.cloud_id = res.id; return b; });
+    })).then(function() {
+      localStorage.setItem(BLOCKS_KEY, JSON.stringify(localBlocks));
+      showToast('Synced ' + toUpload.length + ' blocks');
+    });
+  }).catch(function(e) { showToast('Sync failed: ' + e); });
+}
+
+function syncBlocksFromCloud() {
+  if (!API_SECRET) { showToast('No API secret'); return; }
+  api('/api/blocks').then(function(cloudBlocks) {
+    localStorage.setItem(BLOCKS_KEY, JSON.stringify(cloudBlocks));
+    blocks = cloudBlocks;
+    renderBlockList(); updateBlockSelectors();
+    showToast('Loaded ' + cloudBlocks.length + ' blocks');
+  }).catch(function(e) { showToast('Load failed: ' + e); });
+}
+
+function kimiTranslateReal(text, mode) {
+  if (!API_SECRET) { showToast('Offline mode'); return nativeTranslateOffline(text); }
+  showToast('Translating...');
+  api('/api/kimi/translate', 'POST', { text: text, mode: mode || 'balanced' })
+    .then(function(res) {
+      var result = document.getElementById('nativeResult');
+      if (result) result.innerHTML = '<div class="native-result"><div class="tag">KIMI TRANSLATE</div><pre style="white-space:pre-wrap;font-size:14px">' + res.prompt + '</pre></div>';
+      showToast('Translated! ' + res.tokens_used + ' tokens');
+    })
+    .catch(function(e) { showToast('Translation failed: ' + e); nativeTranslateOffline(text); });
+}
+
+function nativeTranslateOffline(text) {
+  var result = document.getElementById('nativeResult');
+  if (result) result.innerHTML = '<div class="native-result"><div class="tag">OFFLINE</div><pre style="white-space:pre-wrap;font-size:14px">' + kimify(text) + '</pre></div>';
+}
+
+function vcotDriftCheck(prompt) {
+  if (!API_SECRET) { showToast('VCOT disabled'); return; }
+  showToast('Checking drift...');
+  api('/api/vcot/drift-check', 'POST', { prompt: prompt })
+    .then(function(res) {
+      var msg = res.drift_detected ? '\u26a0\ufe0f DRIFT: ' + res.drift_type : '\u2705 Clean';
+      showToast(msg + ' (' + Math.round(res.confidence*100) + '%)');
+    })
+    .catch(function(e) { showToast('VCOT failed: ' + e); });
+}
+
+function enhancePrompt() {
+  var prompt = document.getElementById('basePrompt').value.trim() || document.getElementById('builderResult').textContent.trim();
+  if (!prompt) { showToast('No prompt'); return; }
+  if (!API_SECRET) { showToast('Enhance disabled'); return; }
+  showToast('Enhancing...');
+  api('/api/kimi/enhance', 'POST', { prompt: prompt, focus: 'general' })
+    .then(function(res) {
+      var result = document.getElementById('builderResult');
+      if (result) result.innerHTML = '<div class="native-result"><div class="tag">KIMI ENHANCED</div><pre style="white-space:pre-wrap;font-size:14px">' + res.enhanced + '</pre></div>';
+      showToast('Enhanced! +' + res.tokens_used + ' tokens');
+    })
+    .catch(function(e) { showToast('Enhance failed: ' + e); });
+}
+
+function showCloudSettings() {
+  var html = '<div style="padding:16px"><span class="label">Cloud Backend</span>' +
+    '<div class="inline-control"><span>URL:</span><input type="text" id="backendUrl" value="' + BACKEND_URL + '" style="flex:1"></div>' +
+    '<div class="inline-control"><span>Secret:</span><input type="text" id="apiSecret" value="' + API_SECRET + '" style="flex:1"></div>' +
+    '<button class="btn btn-kimi" onclick="saveCloudSettings()" style="width:100%;margin:12px 0">Save Settings</button>' +
+    '<button class="btn btn-generate" onclick="syncBlocksToCloud()" style="width:100%;margin:8px 0">\u2b06\ufe0f Sync Blocks</button>' +
+    '<button class="btn btn-generate" onclick="syncBlocksFromCloud()" style="width:100%;margin:8px 0">\u2b07\ufe0f Load Blocks</button>' +
+    '<div class="tip-box" style="margin-top:16px"><k>User ID:</k> ' + USER_ID + '<br><k>Status:</k> ' + (API_SECRET ? 'Configured' : 'Not configured') + '</div></div>';
+  var modal = document.createElement('div');
+  modal.id = 'cloudSettingsModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:300;overflow-y:auto;';
+  modal.innerHTML = html + '<button style="position:fixed;top:16px;right:16px;background:none;border:none;color:var(--text);font-size:24px;cursor:pointer" onclick="document.getElementById(\'cloudSettingsModal\').remove()">\u00d7</button>';
+  document.body.appendChild(modal);
+}
+
+function saveCloudSettings() {
+  var url = document.getElementById('backendUrl').value.trim();
+  var secret = document.getElementById('apiSecret').value.trim();
+  localStorage.setItem('vlpro_backend_url', url);
+  localStorage.setItem('vlpro_api_secret', secret);
+  showToast('Settings saved');
+  document.getElementById('cloudSettingsModal').remove();
+}
+
+// ===== COPY FUNCTIONS =====
+function copyTextPlain() {
+  var text = document.getElementById('builderResult').textContent;
+  navigator.clipboard.writeText(text).then(function(){ showToast('Copied'); });
+}
+function copyWithMeta() {
+  var text = document.getElementById('builderResult').textContent;
+  var meta = new Date().toLocaleString() + ' | ' + document.getElementById('subj1Actress').value;
+  navigator.clipboard.writeText(text + '\n\n' + meta).then(function(){ showToast('Copied with meta'); });
+}
+function shareToWhatsApp() {
+  var text = document.getElementById('builderResult').textContent;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text.slice(0,500)));
+}
+
+// ===== GOLDEN BLOCKS =====
+function toggleStar(id) {
+  var b = blocks.find(function(x){return x.id===id;});
+  if(b){ b.starred = !b.starred; localStorage.setItem(BLOCKS_KEY, JSON.stringify(blocks)); renderBlockList(); }
+}
+
 function injectCAVCSS() {
   var style = document.createElement('style');
   style.textContent = `
@@ -1732,9 +2083,6 @@ function injectCAVPanels() {
 }
 
 injectCAVCSS();
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(injectCAVPanels, 100);
-});
 </script>
 </body>
 </html>
