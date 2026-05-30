@@ -3,8 +3,8 @@ services:
     name: visual-lab-pro-api
     env: node
     plan: starter
-    buildCommand: npm install --production
-    startCommand: node dist/index.js
+    buildCommand: npm install --production && npm run build
+    startCommand: node index.js
     envVars:
       - key: NODE_ENV
         value: production
