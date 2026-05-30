@@ -22,6 +22,12 @@ app.use((0, cors_1.default)({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express_1.default.json({ limit: '10mb' }));
+// Static files - frontend
+app.use(express_1.default.static('public'));
+// Root route serves the frontend
+app.get('/', (req, res) => {
+    res.sendFile('public/index.html', { root: process.cwd() });
+});
 // API Secret middleware for sensitive routes
 const requireSecret = (req, res, next) => {
     const secret = req.headers['x-api-secret'] || req.query.secret;

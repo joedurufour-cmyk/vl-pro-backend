@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Visual Lab PRO v6 · CAV</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#000;--surface:#0a0a0a;--surface2:#141414;--surface3:#1a1a1a;--border:#222;--text:#e8e8e8;--text2:#888;--text3:#555;--accent:#ff3366;--accent2:#33ff88;--accent3:#3388ff;--warn:#ffaa33;--kimi:#cc77ff}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding-bottom:90px}
+.header{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:18px;font-weight:700;letter-spacing:0.5px}
+.header .badge{font-size:10px;color:var(--kimi);text-transform:uppercase;letter-spacing:1px;border:1px solid var(--kimi);padding:2px 8px;border-radius:10px}
+.section{display:none;padding:16px;animation:fadeIn .3s}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin:20px 0 8px}
+.label small{color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0}
+textarea,input[type="text"],input[type="number"],select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-size:15px;font-family:inherit;outline:none;resize:vertical}
+textarea{min-height:100px}
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{padding:12px 18px;background:var(--surface2);border:2px solid var(--border);border-radius:24px;font-size:14px;cursor:pointer;user-select:none;color:var(--text2);font-weight:500;min-width:90px;text-align:center}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.chip.locked{border-color:var(--accent2);color:var(--accent2)}
+.chip.kimi{border-color:var(--kimi);color:var(--kimi)}
+.chip.kimi.active{background:var(--kimi);color:#fff}
+.category{margin:20px 0;padding:16px;background:var(--surface);border-radius:12px;border:1px solid var(--border)}
+.category-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:12px;display:flex;justify-content:space-between}
+.category-title .toggle-btn{font-size:16px;color:var(--accent);cursor:pointer;font-weight:700;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:8px}
+.collapsed .cat-body{display:none}
+.prompt-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin:16px 0}
+.prompt-card .meta{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;justify-content:space-between}
+.prompt-card .meta .changed{color:var(--warn);font-weight:700}
+.prompt-text{font-size:14px;line-height:1.6;word-break:break-word;font-family:monospace;color:var(--text);padding:10px;background:var(--surface2);border-radius:8px;margin:8px 0}
+.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{flex:1;padding:16px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-copy{background:var(--accent);color:#fff}
+.btn-kimi{background:var(--kimi);color:#fff}
+.btn-win{background:var(--surface2);border:2px solid var(--accent2);color:var(--accent2);font-size:14px;padding:10px;min-width:50px;border-radius:10px}
+.btn-fail{background:var(--surface2);border:2px solid var(--accent);color:var(--accent);font-size:14px;padding:10px;min-width:50px;border-radius:10px}
+.btn-generate{background:var(--accent);color:#fff;width:100%;margin:20px 0;padding:18px;font-size:16px}
+.btn-kimi-generate{background:var(--kimi);color:#fff;width:100%;margin:20px 0;padding:18px;font-size:16px}
+.log-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-radius:12px;margin:8px 0;border:1px solid var(--border)}
+.log-item .status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.log-item .status-dot.win{background:var(--accent2)}
+.log-item .status-dot.fail{background:var(--accent)}
+.log-item .info{flex:1;min-width:0}
+.log-item .title{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-item .date{font-size:11px;color:var(--text2)}
+.empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:14px}
+.empty .icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:200;opacity:0;transition:all .3s}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.inline-control{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap}
+.inline-control span{font-size:14px;color:var(--text2);font-weight:600;min-width:100px}
+.inline-control select{flex:1;min-width:150px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.toggle-label{font-size:15px;font-weight:600}
+.toggle-label small{display:block;color:var(--text2);font-size:12px;margin-top:2px;font-weight:400}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;z-index:100}
+.nav-btn{flex:1;padding:10px 4px;background:none;border:none;color:var(--text2);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav-btn .icon{font-size:18px}
+.nav-btn.active{color:var(--accent)}
+.nav-btn.kimi.active{color:var(--kimi)}
+.nav-btn.blocks.active{color:#ff9933}
+.compare-item{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:12px;cursor:pointer}
+.compare-item.selected{border-color:var(--accent)}
+.native-input{background:var(--surface3);border:2px solid var(--kimi);border-radius:14px;padding:20px;font-size:16px;min-height:120px}
+.native-result{background:var(--surface);border:1px solid var(--kimi);border-radius:14px;padding:16px;margin:16px 0}
+.native-result .tag{background:var(--kimi);color:#fff;font-size:10px;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:8px}
+.table-ref{width:100%;margin:12px 0;border-collapse:collapse;font-size:12px}
+.table-ref th{background:var(--surface2);padding:8px;text-align:left;border:1px solid var(--border);color:var(--text2)}
+.table-ref td{padding:8px;border:1px solid var(--border);color:var(--text3)}
+.table-ref .optimal{background:rgba(51,255,136,.1);color:var(--accent2);font-weight:600}
+.table-ref .danger{background:rgba(255,51,102,.1);color:var(--accent);font-weight:600}
+.tip-box{background:var(--surface2);border-left:3px solid var(--accent3);padding:12px;margin:12px 0;font-size:13px;color:var(--text2)}
+.tip-box k{color:var(--accent3);font-weight:700}
+.builder-help{font-size:12px;color:var(--text3);margin-bottom:12px}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.group-select{margin-bottom:8px}
+.sticky-actions{position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--border);z-index:50}
+/* BLOCKS */
+.block-card{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:14px;margin:8px 0}
+.block-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.block-card-name{font-size:14px;font-weight:700;color:var(--text)}
+.block-card-meta{font-size:11px;color:var(--text3)}
+.block-card-preview{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px;font-family:monospace}
+.block-card-btns{display:flex;gap:6px}
+.block-mini-btn{padding:6px 12px;font-size:11px;font-weight:700;border:none;border-radius:8px;cursor:pointer}
+.block-mini-btn.del{background:var(--surface2);border:1px solid var(--accent);color:var(--accent)}
+.block-mini-btn.load{background:var(--surface2);border:1px solid var(--kimi);color:var(--kimi)}
+.mixer-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin:10px 0}
+.mixer-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.mixer-preview{font-size:11px;font-family:monospace;color:var(--text3);background:var(--surface2);border-radius:6px;padding:8px;margin-top:6px;min-height:32px;max-height:70px;overflow-y:auto;line-height:1.5}
+.blocks-badge{display:inline-block;background:#ff9933;color:#000;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1>Visual Lab PRO</h1><div class="badge">Blocks x MJ 8.1 v6 · CAV</div></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" data-tab="forge"><span class="icon">⚗️</span><span>Forge</span></button>
+  <button class="nav-btn" data-tab="native"><span class="icon">🧠</span><span>Native</span></button>
+  <button class="nav-btn" data-tab="builder"><span class="icon">🏗️</span><span>Builder</span></button>
+  <button class="nav-btn" data-tab="vars"><span class="icon">🔀</span><span>Vars</span></button>
+  <button class="nav-btn" data-tab="comp"><span class="icon">⚖️</span><span>Comp</span></button>
+  <button class="nav-btn" data-tab="blocks"><span class="icon">🧱</span><span>Blocks</span></button>
+  <button class="nav-btn" data-tab="settings"><span class="icon">⚙️</span><span>Config</span></button>
+  <button class="nav-btn" data-tab="log"><span class="icon">📝</span><span>Log</span></button>
+</div>
+
+<!-- === FORGE === -->
+<div class="section active" id="forge">
+<span class="label">Base Prompt</span>
+<textarea id="basePrompt" placeholder="Paste your prompt here..."></textarea>
+<div class="toggle-row"><div class="toggle-label">Brutal Physique<small>Auto-inject hyper musculature hierarchy</small></div><input type="checkbox" id="brutalMode" checked></div>
+<div class="toggle-row"><div class="toggle-label">AR 9:20<small>Phone wallpaper format</small></div><input type="checkbox" id="arLock" checked></div>
+<div class="toggle-row"><div class="toggle-label">Kimi Native<small>Apply Kimi prompt engineering</small></div><input type="checkbox" id="kimiMode" checked></div>
+<span class="label">Lock</span>
+<div class="chip-grid"><div class="chip locked">Physique</div><div class="chip locked">Light</div><div class="chip locked">Camera</div></div>
+<span class="label">Quick Preset</span>
+<div class="chip-grid"><div class="chip" onclick="preset('anya')">Anya Void</div><div class="chip" onclick="preset('tessa')">Tessa Storm</div><div class="chip" onclick="preset('duo')">Duo Close</div></div>
+<button class="btn btn-generate" onclick="goTo('vars')">Build Variations →</button>
+</div>
+
+<!-- === NATIVE === -->
+<div class="section" id="native">
+<span class="label">Write in your language. I translate.</span>
+<textarea class="native-input" id="nativeInput" placeholder="Tessa Thompson mojada brutal en desierto tactical... Squi, surprise me."></textarea>
+<button class="btn btn-kimi-generate" onclick="nativeTranslate()">Kimi Translate →</button>
+<div id="nativeResult"></div>
+<span class="label">Kimi Native Rules</span>
+<div class="tip-box">
+<k>Stylize Inverse:</k> Lower = more realism. <b>240-250</b> = hard cinema sweet spot. 400 = fantasy poster.<br>
+<k>Subject Competition:</k> 1 subject = max detail. 2 = optimal drama. 4+ = epic fantasy.<br>
+<k>Token Budget:</k> Keep active tokens &lt; 40. Short beats long.<br>
+<k>Physique Priority:</k> Must be in first 10 tokens or MJ drifts.<br>
+<k>Light Specific:</k> "Hard 45° sun" beats "dramatic lighting" by miles.
+</div>
+<span class="label">Reference Tables</span>
+<table class="table-ref">
+<tr><th>Stylize</th><th>Realism</th><th>Detail</th><th>Use</th></tr>
+<tr><td>400</td><td class="danger">Low</td><td class="danger">Low</td><td>Fantasy epic</td></tr>
+<tr><td>280</td><td>Medium</td><td>Medium</td><td>Balance</td></tr>
+<tr><td class="optimal">250</td><td class="optimal">HIGH</td><td class="optimal">HIGH</td><td class="optimal">OPTIMO — Cinema sobrio</td></tr>
+<tr><td>240</td><td>Max</td><td>Max</td><td>Crudo, poros extremos</td></tr>
+<tr><td>200</td><td class="danger">Extreme</td><td class="danger">Extreme</td><td class="danger">Docu, riesgo fealdad</td></tr>
+</table>
+<table class="table-ref">
+<tr><th>Subjects</th><th>Detail per body</th><th>Use</th></tr>
+<tr><td class="optimal">1</td><td class="optimal">MAXIMO</td><td class="optimal">Fotoshoot puro, void</td></tr>
+<tr><td class="optimal">2</td><td class="optimal">OPTIMO</td><td class="optimal">Interaccion, drama</td></tr>
+<tr><td>4</td><td>Medium</td><td>Impacto epic, fantasy</td></tr>
+</table>
+</div>
+
+<!-- === BUILDER === -->
+<div class="section" id="builder">
+<span class="label">6-Section Constructor</span>
+<div class="builder-help">Each section builds a block. Kimi assembles with optimal hierarchy.</div>
+<div class="category" id="sec-A"><div class="category-title">A. Subjects <span class="toggle-btn" onclick="toggleCat('sec-A')">−</span></div><div class="cat-body">
+<div class="inline-control"><span>Qty:</span><select id="subjQty" onchange="updateSubjFields()"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+<div id="subj1-block">
+<div class="inline-control"><span>Actress 1:</span><select id="subj1Actress"></select></div>
+<div class="inline-control"><span>Character 1:</span><select id="subj1Char"><option>Original</option><option>Wonder Woman</option><option>Supergirl</option><option>Batgirl</option><option>Harley Quinn</option><option>Catwoman</option><option>Raven</option><option>Black Widow</option><option>Storm</option></select></div>
+</div>
+<div id="subj2-block" style="display:none">
+<div class="inline-control"><span>Actress 2:</span><select id="subj2Actress"></select></div>
+<div class="inline-control"><span>Character 2:</span><select id="subj2Char"><option>Original</option><option>Wonder Woman</option><option>Supergirl</option><option>Batgirl</option><option>Harley Quinn</option><option>Catwoman</option><option>Raven</option><option>Black Widow</option><option>Storm</option></select></div>
+</div>
+<div class="inline-control"><span>Physique:</span><select id="subjPhys"><option>Brutal defined</option><option>Athletic</option><option>Curves</option></select></div>
+<div class="inline-control"><span>Torso ratio:</span><select id="subjRatio"><option>70:30</option><option>65:35</option><option>75:25</option></select></div>
+<div class="inline-control"><span>Height:</span><select id="subjHeight"><option>6'2"</option><option>6'3"</option><option>6'4"</option></select></div>
+</div></div>
+<div class="category" id="sec-B"><div class="category-title">B. Clothing <span class="toggle-btn" onclick="toggleCat('sec-B')">−</span></div><div class="cat-body">
+<div class="inline-control"><span>Base:</span><select id="clothBase"><option>Tactical bikini</option><option>Sports bra + shorts</option><option>Body</option><option>Duster jacket</option><option>Casual</option><option>Wet look</option><option>Superhero suit</option><option>Bodysuit</option><option>Armor plate</option></select></div>
+<div class="inline-control"><span>Color:</span><select id="clothColor"><option>Black</option><option>Red</option><option>Blue</option><option>White</option><option>Gold</option><option>Indigo</option><option>Olive</option><option>Gray</option></select></div>
+<div class="inline-control"><span>Emblem:</span><select id="clothEmblem"><option>None</option><option>Eagle</option><option>S-shield</option><option>Bat</option><option>Diamond</option><option>Cat</option><option>Raven</option><option>Skull</option><option>Star</option></select></div>
+<div class="inline-control"><span>Material:</span><select id="clothMat"><option>Latex</option><option>Mesh</option><option>Neoprene</option><option>Leather</option><option>Denim</option><option>Cotton</option><option>Silk</option><option>Carbon fiber</option></select></div>
+<div class="inline-control"><span>State:</span><select id="clothState"><option>Sweat</option><option>Wet</option><option>Dusty</option><option>Intact</option><option>Torn</option><option>Bloodied</option><option>Oiled</option></select></div>
+</div></div>
+<div class="category" id="sec-C"><div class="category-title">C. Interaction (2+ subjects) <span class="toggle-btn" onclick="toggleCat('sec-C')">−</span></div><div class="cat-body">
+<div class="inline-control"><span>Position:</span><select id="intPos"><option>Solo</option><option>Back to back</option><option>Face to face</option><option>Side by side</option><option>Formation</option><option>Combat stance</option></select></div>
+<div class="inline-control"><span>Contact:</span><select id="intContact"><option>No contact</option><option>Shoulders touching</option><option>Hands linked</option><option>Arms crossed</option><option>Weapons crossed</option></select></div>
+<div class="inline-control"><span>Gaze:</span><select id="intGaze"><option>Camera</option><option>Between them</option><option>Profile</option><option>Closed</option><option>Upward</option></select></div>
+<div class="inline-control"><span>Expression:</span><select id="intExpr"><option>Serene</option><option>Exhausted</option><option>Competitive</option><option>Maniacal</option><option>Predatory</option><option>Defiant</option><option>Mournful</option></select></div>
+</div></div>
+<div class="category" id="sec-D"><div class="category-title">D. Background <span class="toggle-btn" onclick="toggleCat('sec-D')">−</span></div><div class="cat-body">
+<div class="inline-control"><span>Environment:</span><select id="bgEnv"><option>Void</option><option>Desert</option><option>Gym</option><option>City night</option><option>Tundra</option><option>Interior</option><option>Space station</option><option>Rain street</option><option>Industrial</option><option>Forest</option><option>Beach</option><option>Rooftop</option></select></div>
+<div class="inline-control"><span>Time:</span><select id="bgTime"><option>Noon</option><option>Sunset</option><option>Night</option><option>Dawn</option><option>Twilight</option><option>Midnight</option></select></div>
+<div class="inline-control"><span>Weather:</span><select id="bgWeather"><option>Clear</option><option>Rain</option><option>Fog</option><option>Storm</option><option>Snow</option><option>Wind</option><option>Heat haze</option></select></div>
+<div class="inline-control"><span>Light:</span><select id="bgLight"><option>Hard 45</option><option>Cenital</option><option>Frontal</option><option>Backlight</option><option>None (void)</option><option>Neon</option><option>Golden hour</option><option>Moonlight</option></select></div>
+</div></div>
+<div class="category" id="sec-E"><div class="category-title">E. Camera <span class="toggle-btn" onclick="toggleCat('sec-E')">−</span></div><div class="cat-body">
+<div class="inline-control"><span>Distance:</span><select id="camDist"><option>Macro torso</option><option>Mid body</option><option>Full body</option><option>Wide with context</option><option>Extreme close-up</option></select></div>
+<div class="inline-control"><span>Lens:</span><select id="camLens"><option>100mm macro</option><option>85mm</option><option>50mm</option><option>35mm</option><option>24mm</option><option>200mm</option></select></div>
+<div class="inline-control"><span>Aperture:</span><select id="camAperture"><option>f/1.8</option><option>f/1.4</option><option>f/2.0</option><option>f/2.8</option><option>f/4</option><option>f/5.6</option></select></div>
+<div class="inline-control"><span>Angle:</span><select id="camAngle"><option>Normal</option><option>Low angle</option><option>High angle</option><option>Dutch</option><option>Worm</option></select></div>
+<div class="inline-control"><span>Stylize:</span><select id="camStylize"><option value="240">240 — Crudo</option><option value="250" selected>250 — Optimo</option><option value="280">280 — Balance</option></select></div>
+</div></div>
+<div class="category" id="sec-F"><div class="category-title">F. Artifacts <span class="toggle-btn" onclick="toggleCat('sec-F')">−</span></div><div class="cat-body">
+<div class="inline-control"><span>Character:</span><select id="artChar" onchange="updateArtifacts()"><option>None</option><option>Wonder Woman</option><option>Supergirl</option><option>Batgirl</option><option>Harley Quinn</option><option>Catwoman</option><option>Raven</option><option>Black Widow</option><option>Storm</option></select></div>
+<div class="chip-grid" id="artifactChips"></div>
+</div></div>
+<div class="sticky-actions">
+<button class="btn btn-kimi-generate" onclick="buildFromBuilder()">Kimi Build Prompt →</button>
+</div>
+<div id="builderResult"></div>
+</div>
+
+<!-- === VARS === -->
+<div class="section" id="vars">
+<span class="label">Build Variations — Tap MULTIPLE chips. I mix.</span>
+<div class="category"><div class="category-title">Actresses (tap all you want)</div><div class="chip-grid" id="actressChips"></div></div>
+<div class="category"><div class="category-title">Physique (tap one)</div><div class="chip-grid" id="physChips"><div class="chip active">Brutal defined</div><div class="chip">Athletic</div><div class="chip">Curves</div><div class="chip">Brutal lite</div></div></div>
+<div class="category"><div class="category-title">Clothing (tap all you want)</div><div class="chip-grid" id="clothingChips"></div></div>
+<div class="category"><div class="category-title">Setting (tap all you want)</div><div class="chip-grid" id="settingChips"></div></div>
+<div class="category"><div class="category-title">Lighting (tap all you want)</div><div class="chip-grid" id="lightingChips"></div></div>
+<div class="category"><div class="category-title">Chaos (tap one)</div><div class="chip-grid" id="chaosChips"><div class="chip">0</div><div class="chip active">15</div><div class="chip">25</div><div class="chip">40</div><div class="chip">60</div><div class="chip">80</div></div></div>
+<div class="category"><div class="category-title">Stylize (tap one)</div><div class="chip-grid" id="stylizeChips"><div class="chip">50</div><div class="chip active">80</div><div class="chip">120</div><div class="chip">200</div><div class="chip">250</div><div class="chip">400</div></div></div>
+<div class="inline-control"><span>Variations:</span><input type="number" id="varCount" value="4" min="1" max="20" style="max-width:80px"></div>
+<div class="sticky-actions">
+<button class="btn btn-generate" onclick="generate()">Generate Variations →</button>
+</div>
+<div id="results"></div>
+</div>
+
+<!-- === COMP === -->
+<div class="section" id="comp">
+<span class="label">Compare Experiments</span>
+<div id="compareList"></div>
+<button class="btn btn-copy" id="compareBtn" onclick="runCompare()" style="display:none;margin:12px 0">Compare Selected →</button>
+<div id="compareResult"></div>
+</div>
+
+<!-- === BLOCKS === -->
+<div class="section" id="blocks">
+<span class="label">Block Library <span class="blocks-badge">NEW v5</span></span>
+<div id="blockList"></div>
+
+<span class="label">Import Block</span>
+<textarea id="blockImport" placeholder="Paste complete Midjourney prompt here..." style="min-height:90px;"></textarea>
+<div class="inline-control" style="margin-top:8px;">
+  <span>Name:</span>
+  <input type="text" id="blockName" placeholder="Supergirl Golden Hour" style="flex:1;">
+</div>
+<button class="btn btn-kimi" onclick="importBlock()" style="width:100%;margin:12px 0;">🧱 Parse &amp; Save Block</button>
+
+<div id="mixerPanel" style="display:none;">
+  <span class="label">Mixer — Base Block</span>
+  <select id="baseBlockSelect" onchange="loadMixer()" style="margin-bottom:12px;"></select>
+
+  <span class="label">Override Sections</span>
+  <div class="builder-help">Choose which block each section comes from. "Base" = keep from selected block above.</div>
+
+  <div class="mixer-section">
+    <div class="mixer-section-title">🟥 Character &amp; Physique <span class="toggle-btn" onclick="toggleCat('mix-body-wrap')">−</span></div>
+    <div id="mix-body-wrap">
+      <div class="inline-control"><span>Source:</span><select id="srcBody" onchange="updateMixerPreview()"><option value="base">Base</option></select></div>
+      <div class="mixer-preview" id="previewBody"></div>
+    </div>
+  </div>
+
+  <div class="mixer-section">
+    <div class="mixer-section-title">🟨 Clothing &amp; Outfit <span class="toggle-btn" onclick="toggleCat('mix-cloth-wrap')">−</span></div>
+    <div id="mix-cloth-wrap">
+      <div class="inline-control"><span>Source:</span><select id="srcCloth" onchange="updateMixerPreview()"><option value="base">Base</option></select></div>
+      <div class="mixer-preview" id="previewCloth"></div>
+    </div>
+  </div>
+
+  <div class="mixer-section">
+    <div class="mixer-section-title">🟦 Lighting &amp; Camera <span class="toggle-btn" onclick="toggleCat('mix-light-wrap')">−</span></div>
+    <div id="mix-light-wrap">
+      <div class="inline-control"><span>Source:</span><select id="srcLight" onchange="updateMixerPreview()"><option value="base">Base</option></select></div>
+      <div class="mixer-preview" id="previewLight"></div>
+    </div>
+  </div>
+
+  <div class="mixer-section">
+    <div class="mixer-section-title">🟩 Background &amp; Environment <span class="toggle-btn" onclick="toggleCat('mix-bg-wrap')">−</span></div>
+    <div id="mix-bg-wrap">
+      <div class="inline-control"><span>Source:</span><select id="srcBg" onchange="updateMixerPreview()"><option value="base">Base</option></select></div>
+      <div class="mixer-preview" id="previewBg"></div>
+    </div>
+  </div>
+
+  <div class="mixer-section">
+    <div class="mixer-section-title">⬜ Negatives <span class="toggle-btn" onclick="toggleCat('mix-neg-wrap')">−</span></div>
+    <div id="mix-neg-wrap">
+      <div class="inline-control"><span>Source:</span><select id="srcNeg" onchange="updateMixerPreview()"><option value="base">Base</option></select></div>
+      <div class="mixer-preview" id="previewNeg"></div>
+    </div>
+  </div>
+
+  <div class="mixer-section">
+    <div class="mixer-section-title">⚙️ Parameters <span class="toggle-btn" onclick="toggleCat('mix-params-wrap')">−</span></div>
+    <div id="mix-params-wrap">
+      <div class="inline-control"><span>Source:</span><select id="srcParams" onchange="updateMixerPreview()"><option value="base">Base</option></select></div>
+      <div class="mixer-preview" id="previewParams"></div>
+    </div>
+  </div>
+
+  <span class="label">Assembled Prompt</span>
+  <textarea id="mixedOutput" readonly style="min-height:120px;font-size:13px;font-family:monospace;border-color:var(--kimi);"></textarea>
+  <div class="actions" style="margin-top:12px;">
+    <button class="btn btn-copy" onclick="copyMixed()" style="flex:2;">COPY</button>
+    <button class="btn btn-win" onclick="saveMixedToLog('win')">✅</button>
+    <button class="btn btn-fail" onclick="saveMixedToLog('fail')">❌</button>
+  </div>
+</div>
+</div>
+
+<!-- === LOG === -->
+<div class="section" id="log">
+<span class="label">Experiment Log</span>
+<div id="logList"></div>
+</div>
+
+<!-- === SETTINGS === -->
+<div class="section" id="settings">
+<span class="label">Cloud Backend</span>
+<div class="toggle-row"><div class="toggle-label">Use Cloud Mode<small>Send requests to Render backend + Kimi API</small></div><input type="checkbox" id="cloudToggle" onchange="saveCloudConfig()"></div>
+<span class="label">Backend URL</span>
+<input type="text" id="backendUrl" placeholder="https://visual-lab-api.onrender.com" onchange="saveCloudConfig()">
+<span class="label">API Secret</span>
+<input type="text" id="apiSecret" placeholder="vl-pro-secret-key" onchange="saveCloudConfig()">
+<div class="tip-box" style="margin-top:20px">
+<k>How to use:</k><br>
+1. Deploy backend to Render<br>
+2. Copy URL + API secret from Render dashboard<br>
+3. Paste here and enable Cloud Mode<br>
+4. "Native" and "Enhance" will call the real LLM
+</div>
+<span class="label">Connection Test</span>
+<button class="btn btn-kimi" onclick="testConnection()" style="width:100%">Test Connection →</button>
+<div id="connResult" style="margin-top:12px"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var ACTRESSES = [
+  'Anya Taylor-Joy','Tessa Thompson','Zoe Saldana','Gal Gadot','Lupita Nyongo',
+  'Priyanka Chopra','Salma Hayek','Eva Green','Cate Blanchett','Charlize Theron',
+  'Margot Robbie','Brie Larson','Scarlett Johansson','Jennifer Lawrence','Viola Davis',
+  'Halle Berry','Naomi Scott','Awkwafina','Michelle Rodriguez','Emilia Clarke',
+  'Daisy Ridley','Pom Klementieff','Karen Gillan','Letitia Wright','Elizabeth Olsen',
+  'Florence Pugh','Danai Gurira','Rebecca Ferguson','Indira Varma','Connie Nielsen',
+  'Robin Wright','Patty Jenkins','Tilda Swinton','Angela Bassett','Taraji P. Henson',
+  'Jurnee Smollett','Aldis Hodge','Rosario Dawson','Gabrielle Union','Thandiwe Newton',
+  'Ruth Negga','Sonequa Martin-Green','Jessica Henwick','Rosalind Pike','Noomi Rapace',
+  'Sofia Boutella','Caity Lotz','Candice Patton','Danielle Panabaker','Hartley Sawyer',
+  'Violett Beane','Jessica Camacho','Anne Dudek','Allison Paige','Britne Oldford','Emily Kinney'
+];
+
+var ACTRESS_DESC = {
+  'Anya Taylor-Joy':'pale intense gaze, alien cheekbones',
+  'Tessa Thompson':'dark regal features, warrior energy',
+  'Zoe Saldana':'lean dancer physique, strong jaw',
+  'Gal Gadot':'tall warrior, Mediterranean features',
+  'Lupita Nyongo':'luminous dark skin, expressive face',
+  'Priyanka Chopra':'exotic power, dark intense eyes',
+  'Salma Hayek':'Latin curves, black hair',
+  'Eva Green':'dark mysterious, French elegance',
+  'Cate Blanchett':'sharp elf-like precision, ice blonde',
+  'Charlize Theron':'Nordic warrior, hard jawline',
+  'Margot Robbie':'Australian blonde, expressive eyes',
+  'Brie Larson':'athletic blonde, strong build',
+  'Scarlett Johansson':'red hair, grey-blue eyes, curves',
+  'Jennifer Lawrence':'all-American, natural features',
+  'Viola Davis':'powerful presence, regal dark features',
+  'Halle Berry':'mixed features, iconic jawline',
+  'Naomi Scott':'British-Indian, doe eyes',
+  'Awkwafina':'sharp wit in facial structure',
+  'Michelle Rodriguez':'Latina fighter energy, scars',
+  'Emilia Clarke':'petite dragon queen, silver hair potential',
+  'Daisy Ridley':'British, fierce large eyes',
+  'Pom Klementieff':'French-Korean, alien-beautiful',
+  'Karen Gillan':'Scottish, tall, red hair',
+  'Letitia Wright':'Trinidadian, bright smile, warrior',
+  'Elizabeth Olsen':'American, wide eyes, blonde-brunette',
+  'Florence Pugh':'British, strong compact build',
+  'Danai Gurira':'Zimbabwean, warrior energy',
+  'Rebecca Ferguson':'Swedish, powerful presence',
+  'Indira Varma':'British-Indian, mature elegance',
+  'Connie Nielsen':'Danish, classic warrior beauty',
+  'Robin Wright':'American, steel-blue authority',
+  'Patty Jenkins':'director energy',
+  'Tilda Swinton':'androgynous, ethereal, pale',
+  'Angela Bassett':'powerhouse physique, ageless',
+  'Taraji P. Henson':'American, expressive, strong',
+  'Jurnee Smollett':'Black Canary energy',
+  'Aldis Hodge':'male warrior energy',
+  'Rosario Dawson':'Latina warrior, deep eyes',
+  'Gabrielle Union':'strong athetic form',
+  'Thandiwe Newton':'British-Nigerian, sharp features',
+  'Ruth Negga':'Irish-Ethiopian, otherworldly',
+  'Sonequa Martin-Green':'expressive, spiritual warrior',
+  'Jessica Henwick':'British-Singaporean, martial arts',
+  'Rosalind Pike':'British ice-blonde precision',
+  'Noomi Rapace':'Swedish intensity, original girl with dragon tattoo',
+  'Sofia Boutella':'Algerian dancer, extreme flexibility',
+  'Caity Lotz':'gymnast build, White Canary',
+  'Candice Patton':'Flash universe, high runner energy',
+  'Danielle Panabaker':'scientist-hero dual nature',
+  'Hartley Sawyer':'elongated build',
+  'Violett Beane':'young athletic, Jesse Quick',
+  'Jessica Camacho':'latina fighter, Gypsy',
+  'Anne Dudek':'blonde, intelligent physicality',
+  'Allison Paige':'speedster body',
+  'Britne Oldford':'long athletic',
+  'Emily Kinney':'dancer body, blonde'
+};
+
+var PRESETS = {
+  clothing: ['Tactical Bikini','Casual Wet','Superhero Suit','Duster Jacket','Mesh Bodysuit','Leather Harness','Sports Bra + Leggings','Battle Armor','Evening Gown Torn','Swimsuit Metallic','Kimono Open','Trench Coat','Bodysuit Latex','Jeans + Crop Top'],
+  setting: ['Space Orbit','Desert Storm','Rain Street','Vintage Studio','Void Black','Industrial Warehouse','Tundra White','City Rooftop','Underwater','Forest Night','Beach Sunset','Gym Industrial','Abandoned Factory','Snow Mountain','Neon Alley','Dojo Wooden'],
+  lighting: ['Golden Hour','Neon Cold','Side Light 45','Backlit Silhouette','Hard Studio 45','Moonlight Blue','Fire Warm','Cenital Spotlight','Rim Light Red','Split Face Shadow','Volumetric Fog','No Light Void']
+};
+
+var ARTIFACTS = {
+  'Wonder Woman': ['Lazo dorado','Espada','Escudo','Tiara','Brazaletes'],
+  'Supergirl': ['Capa roja','S-shield objeto','Rayo calor'],
+  'Batgirl': ['Batarangs','Bat-latigo','Capa','Gadget cinturon'],
+  'Harley Quinn': ['Bate GOOD NIGHT','Martillo','Pistola pop','Granadas'],
+  'Catwoman': ['Latigo','Garras','Goggles','Diamante'],
+  'Raven': ['Capa oscura','Energia violeta','Libro Azarath'],
+  'Black Widow': ['Batons electricos','Pistolas','Viuda mordida'],
+  'Storm': ['Capa blanca','Rayos','Viento','Ojo blanco glow']
+};
+
+var exps = JSON.parse(localStorage.getItem('vlpro') || '[]');
+var sel = [];
+
+// ===== BLOCK SYSTEM =====
+var BLOCKS_KEY = 'vlpro_blocks';
+var blocks = JSON.parse(localStorage.getItem(BLOCKS_KEY) || '[]');
+
+var LIGHT_KEYS = ['light','lighting','rim','key','spotlight','golden hour','moonlight','neon','backlight','side light','volumetric','dof','depth of field','bokeh','sunlight','studio light','hard light','soft light','directional','ambient','45','cenital','frontal','silhouette','shadow','chiaroscuro','lens','aperture','f/1','f/2','f/4','f/5','50mm','85mm','100mm','35mm','24mm','200mm','macro','wide angle','low angle','high angle','dutch angle','shot on','cooke','arri','alexa','sony','canon','nikon','camera','film grain','grain texture'];
+var BG_KEYS = ['background','skyline','studio','void','desert','rooftop','city','street','rain','forest','beach','space','gym','industrial','warehouse','tundra','mountain','snow','ocean','underwater','interior','room','wall','backdrop','environment','location','scene','setting','distant','blur','bokeh'];
+var CLOTH_KEYS = ['wearing','wear','suit','outfit','bikini','armor','jacket','top','shorts','pants','jeans','dress','gown','cape','boots','gloves','bodysuit','latex','leather','mesh','neoprene','denim','cotton','silk','carbon fiber','emblem','costume','uniform','tactical','combat','gear','harness','belt','bracers','visor','goggles','mask','helmet','tiara','shield'];
+var PHYS_KEYS = ['abs','abdominis','musculature','torso','physique','body','skin','oblique','serratus','rectus','vascular','veins','muscular','defined','shredded','athletic','lean','conditioning','bodyfat','proportions','elongated','elongation','waist','hip','iliac','midsection','core','build','stature','pores','sweat','grain','texture','dry','matte','wet look','oiled'];
+var FACE_KEYS = ['face','expression','gaze','eyes','smile','lips','cheek','jaw','hair','blonde','brunette','redhead'];
+
+function parsePromptToBlock(name, rawText) {
+  var text = rawText.trim();
+  var paramRegex = /--[a-zA-Z0-9\-]+(?:\s+[\w\:\/.\-]+)?/g;
+  var paramsFound = text.match(paramRegex) || [];
+  var params = {};
+  paramsFound.forEach(function(p) {
+    var parts = p.trim().split(/\s+/);
+    var flag = parts[0].replace(/^--/, '');
+    var val = parts[1] || true;
+    if (val !== true && !isNaN(val)) val = parseFloat(val);
+    params[flag] = val;
+  });
+  var descText = text.replace(paramRegex, '').replace(/\s+/g, ' ').trim();
+
+  var negatives = [];
+  var negMatch = descText.match(/\bno\s+([a-z\s,]+?)(?:,|\.|$)/gi);
+  if (negMatch) {
+    negMatch.forEach(function(m) {
+      m.replace(/\bno\s+/gi, '').split(/,\s*/).forEach(function(item) {
+        var clean = item.trim().toLowerCase();
+        if (clean && clean.length > 2) negatives.push(clean);
+      });
+    });
+  }
+
+  var sentences = descText.split(/[.;]\s+/);
+  var sections = { personaje: [], fisico: [], vestimenta: [], lighting: [], background: [], otros: [] };
+
+  sentences.forEach(function(s) {
+    var lower = s.toLowerCase();
+    var scores = { light: 0, bg: 0, cloth: 0, phys: 0 };
+    LIGHT_KEYS.forEach(function(k) { if (lower.indexOf(k) !== -1) scores.light++; });
+    BG_KEYS.forEach(function(k) { if (lower.indexOf(k) !== -1) scores.bg++; });
+    CLOTH_KEYS.forEach(function(k) { if (lower.indexOf(k) !== -1) scores.cloth++; });
+    PHYS_KEYS.forEach(function(k) { if (lower.indexOf(k) !== -1) scores.phys++; });
+    var maxScore = Math.max(scores.light, scores.bg, scores.cloth, scores.phys);
+    if (maxScore === 0) {
+      var hasActress = ACTRESSES.some(function(a) { return lower.indexOf(a.toLowerCase().split(' ')[0]) !== -1; });
+      var hasFace = FACE_KEYS.some(function(k) { return lower.indexOf(k) !== -1; });
+      if (hasActress || hasFace || s.length < 80) sections.personaje.push(s);
+      else sections.otros.push(s);
+    } else if (scores.light >= scores.bg && scores.light >= scores.cloth && scores.light >= scores.phys) {
+      sections.lighting.push(s);
+    } else if (scores.bg >= scores.cloth && scores.bg >= scores.phys) {
+      sections.background.push(s);
+    } else if (scores.cloth >= scores.phys) {
+      sections.vestimenta.push(s);
+    } else {
+      sections.fisico.push(s);
+    }
+  });
+
+  return {
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    nombre: name || ('Block ' + (blocks.length + 1)),
+    raw_text: rawText,
+    personaje: sections.personaje.join('. '),
+    fisico: sections.fisico.join('. '),
+    vestimenta: sections.vestimenta.join('. '),
+    lighting: sections.lighting.join('. '),
+    background: sections.background.join('. '),
+    otros: sections.otros.join('. '),
+    parametros: params,
+    param_string: paramsFound.join(' '),
+    negativos: negatives,
+    chaos: params.c || params.chaos || '',
+    ar: params.ar || '',
+    stylize: params.s || params.stylize || '',
+    version: params.v || ''
+  };
+}
+
+function importBlock() {
+  var raw = document.getElementById('blockImport').value.trim();
+  var name = document.getElementById('blockName').value.trim();
+  if (!raw) { showToast('Paste a prompt first'); return; }
+  var block = parsePromptToBlock(name, raw);
+  blocks.unshift(block);
+  localStorage.setItem(BLOCKS_KEY, JSON.stringify(blocks));
+  document.getElementById('blockImport').value = '';
+  document.getElementById('blockName').value = '';
+  renderBlockList();
+  updateBlockSelectors();
+  showToast('Block saved: ' + block.nombre);
+  document.getElementById('mixerPanel').style.display = 'block';
+}
+
+function renderBlockList() {
+  var box = document.getElementById('blockList');
+  if (!blocks.length) {
+    box.innerHTML = '<div class="empty"><div class="icon">🧱</div>No blocks yet. Import a prompt below.</div>';
+    return;
+  }
+  box.innerHTML = '';
+  for (var i = 0; i < Math.min(blocks.length, 30); i++) {
+    var b = blocks[i];
+    var card = document.createElement('div');
+    card.className = 'block-card';
+    var preview = (b.personaje || b.raw_text || '').substring(0, 55);
+    card.innerHTML =
+      '<div class="block-card-header">' +
+        '<div class="block-card-name">' + esc(b.nombre) + '</div>' +
+        '<div class="block-card-meta">' + (b.ar ? 'AR:' + b.ar : '') + (b.version ? ' v' + b.version : '') + (b.chaos ? ' c' + b.chaos : '') + '</div>' +
+      '</div>' +
+      '<div class="block-card-preview">' + esc(preview) + (preview.length >= 55 ? '…' : '') + '</div>' +
+      '<div class="block-card-btns">' +
+        '<button class="block-mini-btn del" onclick="deleteBlock(' + b.id + ')">Delete</button>' +
+        '<button class="block-mini-btn load" onclick="loadBlockToMixer(' + b.id + ')">Load to Mixer</button>' +
+      '</div>';
+    box.appendChild(card);
+  }
+}
+
+function deleteBlock(id) {
+  blocks = blocks.filter(function(b) { return b.id !== id; });
+  localStorage.setItem(BLOCKS_KEY, JSON.stringify(blocks));
+  renderBlockList();
+  updateBlockSelectors();
+  if (blocks.length === 0) document.getElementById('mixerPanel').style.display = 'none';
+  showToast('Block deleted');
+}
+
+function loadBlockToMixer(id) {
+  document.getElementById('baseBlockSelect').value = String(id);
+  loadMixer();
+  showToast('Loaded to mixer');
+}
+
+function updateBlockSelectors() {
+  var selIds = ['baseBlockSelect','srcBody','srcCloth','srcLight','srcBg','srcNeg','srcParams'];
+  selIds.forEach(function(selId) {
+    var el = document.getElementById(selId);
+    if (!el) return;
+    var current = el.value;
+    el.innerHTML = '<option value="base">Base</option>';
+    blocks.forEach(function(b) {
+      var opt = document.createElement('option');
+      opt.value = String(b.id);
+      opt.textContent = b.nombre + (b.ar ? ' [' + b.ar + ']' : '');
+      el.appendChild(opt);
+    });
+    if (selId === 'baseBlockSelect' && blocks.length > 0) {
+      el.value = current || String(blocks[0].id);
+    } else {
+      var stillExists = blocks.some(function(b) { return String(b.id) === current; });
+      if (stillExists) el.value = current;
+    }
+  });
+}
+
+function getBlockField(blockId, field) {
+  var id = blockId === 'base' ? document.getElementById('baseBlockSelect').value : blockId;
+  var b = blocks.find(function(x) { return String(x.id) === String(id); });
+  return b ? (b[field] || '') : '';
+}
+
+function getBlockNeg(blockId) {
+  var id = blockId === 'base' ? document.getElementById('baseBlockSelect').value : blockId;
+  var b = blocks.find(function(x) { return String(x.id) === String(id); });
+  return b ? (b.negativos || []) : [];
+}
+
+function getBlockParams(blockId) {
+  var id = blockId === 'base' ? document.getElementById('baseBlockSelect').value : blockId;
+  var b = blocks.find(function(x) { return String(x.id) === String(id); });
+  return b ? (b.parametros || {}) : {};
+}
+
+function getBlockParamString(blockId) {
+  var id = blockId === 'base' ? document.getElementById('baseBlockSelect').value : blockId;
+  var b = blocks.find(function(x) { return String(x.id) === String(id); });
+  return b ? (b.param_string || '') : '';
+}
+
+function loadMixer() {
+  updateBlockSelectors();
+  updateMixerPreview();
+}
+
+function updateMixerPreview() {
+  var srcBody = document.getElementById('srcBody').value;
+  var srcCloth = document.getElementById('srcCloth').value;
+  var srcLight = document.getElementById('srcLight').value;
+  var srcBg = document.getElementById('srcBg').value;
+  var srcNeg = document.getElementById('srcNeg').value;
+  var srcParams = document.getElementById('srcParams').value;
+
+  var bodyText = (getBlockField(srcBody, 'personaje') + ' ' + getBlockField(srcBody, 'fisico')).trim();
+  document.getElementById('previewBody').textContent = bodyText || '(empty)';
+  document.getElementById('previewCloth').textContent = getBlockField(srcCloth, 'vestimenta') || '(empty)';
+  document.getElementById('previewLight').textContent = getBlockField(srcLight, 'lighting') || '(empty)';
+  document.getElementById('previewBg').textContent = getBlockField(srcBg, 'background') || '(empty)';
+
+  var negs = getBlockNeg(srcNeg);
+  document.getElementById('previewNeg').textContent = negs.length ? negs.join(', ') : '(none)';
+
+  var pStr = getBlockParamString(srcParams);
+  document.getElementById('previewParams').textContent = pStr || '(none)';
+
+  // Assemble
+  var parts = [];
+  if (bodyText) parts.push(bodyText);
+  var clothText = getBlockField(srcCloth, 'vestimenta').trim();
+  if (clothText) parts.push(clothText);
+  var lightText = getBlockField(srcLight, 'lighting').trim();
+  if (lightText) parts.push(lightText);
+  var bgText = getBlockField(srcBg, 'background').trim();
+  if (bgText) parts.push(bgText);
+  if (negs.length > 0) parts.push('--no ' + negs.join(', '));
+  var paramStr = getBlockParamString(srcParams);
+  if (paramStr) parts.push(paramStr);
+
+  var final = parts.join(', ').replace(/,\s*,/g, ',').replace(/\s+/g, ' ').trim();
+  document.getElementById('mixedOutput').value = final;
+}
+
+function copyMixed() {
+  var text = document.getElementById('mixedOutput').value;
+  if (!text) { showToast('Nothing to copy'); return; }
+  copyText(text);
+}
+
+function saveMixedToLog(status) {
+  var prompt = document.getElementById('mixedOutput').value;
+  if (!prompt) { showToast('Nothing to save'); return; }
+  var srcB = document.getElementById('srcBody').value;
+  var srcC = document.getElementById('srcCloth').value;
+  var srcL = document.getElementById('srcLight').value;
+  var srcBg = document.getElementById('srcBg').value;
+  var overrides = [];
+  if (srcB !== 'base') overrides.push('body');
+  if (srcC !== 'base') overrides.push('cloth');
+  if (srcL !== 'base') overrides.push('light');
+  if (srcBg !== 'base') overrides.push('bg');
+  var params = getBlockParams(document.getElementById('srcParams').value);
+  var item = {
+    id: Date.now(),
+    prompt: prompt,
+    changed: 'Mixer[' + (overrides.join('+') || 'base') + ']',
+    status: status,
+    chaos: String(params.c || params.chaos || '15'),
+    stylize: String(params.s || params.stylize || '250'),
+    time: new Date().toISOString(),
+    loggedAt: new Date().toISOString()
+  };
+  exps.unshift(item);
+  save();
+  showToast(status === 'win' ? 'Wujuuuu!' : 'Baneado');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  var navBtns = document.querySelectorAll('.nav-btn');
+  for (var i = 0; i < navBtns.length; i++) {
+    navBtns[i].addEventListener('click', function() { switchTab(this.dataset.tab); });
+  }
+
+  var sel1 = document.getElementById('subj1Actress');
+  var sel2 = document.getElementById('subj2Actress');
+  for (var a = 0; a < ACTRESSES.length; a++) {
+    var opt1 = document.createElement('option'); opt1.textContent = ACTRESSES[a]; opt1.value = ACTRESSES[a]; sel1.appendChild(opt1);
+    var opt2 = document.createElement('option'); opt2.textContent = ACTRESSES[a]; opt2.value = ACTRESSES[a]; sel2.appendChild(opt2);
+  }
+
+  var actGrid = document.getElementById('actressChips');
+  for (var ai = 0; ai < ACTRESSES.length; ai++) {
+    var d = document.createElement('div');
+    d.className = 'chip' + (ai < 4 ? ' active' : '');
+    d.textContent = ACTRESSES[ai];
+    d.onclick = function() { this.classList.toggle('active'); };
+    actGrid.appendChild(d);
+  }
+
+  var clothGrid = document.getElementById('clothingChips');
+  for (var ci = 0; ci < PRESETS.clothing.length; ci++) {
+    var dc = document.createElement('div');
+    dc.className = 'chip' + (ci === 0 ? ' active' : '');
+    dc.textContent = PRESETS.clothing[ci];
+    dc.onclick = function() { this.classList.toggle('active'); };
+    clothGrid.appendChild(dc);
+  }
+
+  var setGrid = document.getElementById('settingChips');
+  for (var si = 0; si < PRESETS.setting.length; si++) {
+    var ds = document.createElement('div');
+    ds.className = 'chip' + (si === 0 ? ' active' : '');
+    ds.textContent = PRESETS.setting[si];
+    ds.onclick = function() { this.classList.toggle('active'); };
+    setGrid.appendChild(ds);
+  }
+
+  var lightGrid = document.getElementById('lightingChips');
+  for (var li = 0; li < PRESETS.lighting.length; li++) {
+    var dl = document.createElement('div');
+    dl.className = 'chip' + (li === 0 ? ' active' : '');
+    dl.textContent = PRESETS.lighting[li];
+    dl.onclick = function() { this.classList.toggle('active'); };
+    lightGrid.appendChild(dl);
+  }
+
+  var singleGrids = ['physChips','chaosChips','stylizeChips'];
+  for (var sg = 0; sg < singleGrids.length; sg++) {
+    var grid = document.getElementById(singleGrids[sg]);
+    if (!grid) continue;
+    var chips = grid.querySelectorAll('.chip');
+    for (var c = 0; c < chips.length; c++) {
+      chips[c].addEventListener('click', function() {
+        var siblings = this.parentElement.querySelectorAll('.chip');
+        for (var s = 0; s < siblings.length; s++) siblings[s].classList.remove('active');
+        this.classList.add('active');
+      });
+    }
+  }
+
+  var lockChips = document.querySelectorAll('.chip.locked');
+  for (var l = 0; l < lockChips.length; l++) {
+    lockChips[l].addEventListener('click', function() { this.classList.toggle('locked'); });
+  }
+
+  updateSubjFields();
+  updateArtifacts();
+
+  // Preload blocks if empty
+  if (blocks.length === 0) {
+    var p1 = parsePromptToBlock('Supergirl Golden Hour', 'ultra-photorealistic full-body cinematic portrait of a young athletic female superhero standing with confidence, wearing a tight dark-navy textured bodysuit with red seam lines and a bold S emblem on the chest, and a flowing red cape suspended mid-motion. Her physique is slender and powerful with sculpture-grade abdominal definition subtly visible beneath the fabric, tension lines contouring an 8-pack core, natural oblique separation along her waistline, and realistic tension mapping across the midsection. The suit displays dynamic fabric compression, soft wrinkles over flexed areas, and matte texture with controlled reflectivity. Her hair moves softly in the wind, her face shows a calm yet commanding expression. Shot under cinematic golden-hour lighting with slight rim accent separating her silhouette from a blurred urban skyline. Realistic material tension, true-to-life proportions, enhanced anatomical realism. --chaos 14 --ar 9:16 --quality 2 --raw --stylize 960 --weird 2 --v 7');
+    var p2 = parsePromptToBlock('Warrior CGI', 'professional hyper-realistic CGI 3D render; medium shot at 50mm lens equivalence, frontal camera with slight upward tilt, depth of field similar to f/4, warm soft indoor lighting with subtle volumetric haze and textured beige backdrop; ultra-lean athletic feminine body with elongated torso proportions, extreme dryness micro-textured skin, deeply recessed abdominal grid with razor-cut inter-rectus channels, serratus ridges emerging beneath warm rim light, canyon-depth obliques and transversus tension lines rendered with multilayer SSS shading; long flowing black hair with glossy highlights, blue reflective eyes; red-and-gold warrior outfit redesigned into an open-core configuration: split chest armor forming a V-shaped anatomical frame, metallic red panels curving around the rib line, central torso open with full abdominal visibility, gold edge inlays framing oblique contours; ultra-low-rise golden waist band wrapping cleanly over the iliac crest; textured beige wall background with soft dust motes, warm directional light entering from upper left; --chaos 14 --ar 43:105 --quality 2 --raw --stylize 960 --weird 2 --v 7');
+    var p3 = parsePromptToBlock('Plumber Heroine', 'deeply defined eight-pack abs, pronounced rectus abdominis separations, active oblique and serratus tension, dry elite conditioning, operational athletic physique, feminine athletic build modulation, powerful yet elegant proportions, long torso, narrow waist, strong legs, adult superheroine inspired by Mario Bros female reinterpretation, confident heroic presence, calm dominant gaze, iconic plumber-hero colorway reinterpretation: deep red and cobalt blue, abstract circular chest emblem motif, short cape or utility back cloth flowing, two-piece superhero tactical suit, cropped compression top plus high-waist armored shorts, clean industrial seams, reinforced straps and utility accents, matte technical fabric under tension revealing core structure, night city skyline background, rooftop vantage, cinematic depth of field, volumetric haze, drifting dust spark FX, high-contrast cinematic lighting sculpting abdomen and waist, realistic skin micro-texture with faint sweat sheen, photorealistic, ultra-detailed --chaos 20 --ar 4:5 --raw --stylize 750 --v 7');
+    blocks = [p1, p2, p3];
+    localStorage.setItem(BLOCKS_KEY, JSON.stringify(blocks));
+  }
+
+  renderBlockList();
+  updateBlockSelectors();
+  if (blocks.length > 0) document.getElementById('mixerPanel').style.display = 'block';
+
+  showToast('Visual Lab PRO v5 · Blocks ready');
+});
+
+function switchTab(tab) {
+  var sections = document.querySelectorAll('.section');
+  for (var i = 0; i < sections.length; i++) sections[i].classList.remove('active');
+  var navs = document.querySelectorAll('.nav-btn');
+  for (var i = 0; i < navs.length; i++) navs[i].classList.remove('active');
+  document.getElementById(tab).classList.add('active');
+  document.querySelector('.nav-btn[data-tab="' + tab + '"]').classList.add('active');
+  if (tab === 'log') renderLog();
+  if (tab === 'comp') renderCompare();
+  if (tab === 'blocks') { renderBlockList(); updateBlockSelectors(); if (blocks.length > 0) { document.getElementById('mixerPanel').style.display = 'block'; updateMixerPreview(); } }
+}
+
+function goTo(tab) {
+  var val = document.getElementById('basePrompt').value.trim();
+  if (!val) { showToast('Paste prompt first'); return; }
+  switchTab(tab);
+}
+
+function toggleCat(id) {
+  var cat = document.getElementById(id);
+  cat.classList.toggle('collapsed');
+  var btn = cat.querySelector('.toggle-btn');
+  if (btn) btn.textContent = cat.classList.contains('collapsed') ? '+' : '−';
+}
+
+function updateSubjFields() {
+  var qty = parseInt(document.getElementById('subjQty').value);
+  var block2 = document.getElementById('subj2-block');
+  if (block2) block2.style.display = qty >= 2 ? 'block' : 'none';
+}
+
+function updateArtifacts() {
+  var char = document.getElementById('artChar').value;
+  var box = document.getElementById('artifactChips');
+  box.innerHTML = '';
+  if (!char || char === 'None' || !ARTIFACTS[char]) return;
+  var arts = ARTIFACTS[char];
+  for (var i = 0; i < arts.length; i++) {
+    var d = document.createElement('div');
+    d.className = 'chip';
+    d.textContent = arts[i];
+    d.onclick = function() { this.classList.toggle('active'); };
+    box.appendChild(d);
+  }
+}
+
+function preset(name) {
+  var ta = document.getElementById('basePrompt');
+  if (name === 'anya') {
+    ta.value = "Cinematic full-body portrait of Anya Taylor-Joy, female, 6'2\" extreme torso elongation 70:30, tactical bikini with eagle emblem, low-waist exposing brutal 8-pack, standing in void — pure black, single brutal studio light from 45°";
+  } else if (name === 'tessa') {
+    ta.value = "Cinematic full-body portrait of Tessa Thompson, female, 6'3\" extreme torso elongation, white cape billowing, low-waist tactical bikini, desert storm, dust particles, harsh sun from 90°";
+  } else if (name === 'duo') {
+    ta.value = "Cinematic full-body of Anya Taylor-Joy and Tessa Thompson, both female, both 6'2\" brutal physique, tactical outfits, void black background, hard 45° side light creating razor shadows";
+  }
+  showToast('Preset loaded');
+}
+
+// ============================================================
+// NATIVE TRANSLATOR
+// ============================================================
+async function nativeTranslate() {
+  var input = document.getElementById('nativeInput').value.trim();
+  if (!input) { showToast('Write something'); return; }
+
+  // Cloud mode: use backend API
+  if (isCloudMode()) {
+    showToast('Kimi translating...');
+    try {
+      var data = await apiCall('/api/translate', {
+        text: input,
+        mode: 'native',
+        ar: '9:20',
+        chaos: 15,
+        stylize: 250
+      });
+      renderNativeResult(data.prompt, data.tokens, true);
+    } catch(e) {
+      showToast('Translation failed, using local mode');
+      var result = kimify(input);
+      renderNativeResult(result.prompt, result.tokens, result.physiqueFirst);
+    }
+    return;
+  }
+
+  // Local mode
+  var result = kimify(input);
+  renderNativeResult(result.prompt, result.tokens, result.physiqueFirst);
+}
+
+function renderNativeResult(prompt, tokens, physiqueFirst) {
+  var box = document.getElementById('nativeResult');
+  box.innerHTML = '';
+  var card = document.createElement('div');
+  card.className = 'native-result';
+  var tag = document.createElement('div');
+  tag.className = 'tag';
+  tag.textContent = isCloudMode() ? 'Kimi Cloud Output' : 'Kimi Native Output';
+  var promptDiv = document.createElement('div');
+  promptDiv.className = 'prompt-text';
+  promptDiv.textContent = prompt;
+  var metaDiv = document.createElement('div');
+  metaDiv.className = 'meta';
+  metaDiv.style.marginTop = '8px';
+  metaDiv.textContent = 'Tokens: ~' + tokens + ' | Physique priority: ' + (physiqueFirst ? 'YES' : 'NO');
+  var actions = document.createElement('div');
+  actions.className = 'actions';
+  var copyBtn = document.createElement('button');
+  copyBtn.className = 'btn btn-kimi';
+  copyBtn.textContent = 'Copy';
+  copyBtn.onclick = function() { copyText(prompt); };
+  var winBtn = document.createElement('button');
+  winBtn.className = 'btn btn-win';
+  winBtn.textContent = '✅';
+  winBtn.onclick = function() { logNative(prompt, 'win'); };
+  var failBtn = document.createElement('button');
+  failBtn.className = 'btn btn-fail';
+  failBtn.textContent = '❌';
+  failBtn.onclick = function() { logNative(prompt, 'fail'); };
+  actions.appendChild(copyBtn);
+  actions.appendChild(winBtn);
+  actions.appendChild(failBtn);
+  card.appendChild(tag);
+  card.appendChild(promptDiv);
+  card.appendChild(metaDiv);
+  card.appendChild(actions);
+  box.appendChild(card);
+}
+
+function kimify(text) {
+  var lower = text.toLowerCase();
+
+  // Detect actress - FIXED: match with or without hyphens, match first name
+  var actress = null;
+  var inputNormalized = lower.replace(/-/g, ' ');
+  for (var a = 0; a < ACTRESSES.length; a++) {
+    var fullName = ACTRESSES[a].toLowerCase();
+    var normalizedName = fullName.replace(/-/g, ' ');
+    var firstName = fullName.split(' ')[0];
+    if (inputNormalized.indexOf(normalizedName) !== -1 || lower.indexOf(fullName) !== -1 || lower.indexOf(firstName) !== -1) { actress = ACTRESSES[a]; break; }
+  }
+
+  // Detect explicit female / woman keywords
+  var femaleKeywords = ['mujer','woman','chica','girl','female','she','her','ella','femme','femenino'];
+  var hasFemale = femaleKeywords.some(function(k) { return lower.indexOf(k) !== -1; });
+
+  var brutal = lower.indexOf('brutal') !== -1 || lower.indexOf('extrem') !== -1 || lower.indexOf('hiper') !== -1;
+  var athletic = lower.indexOf('atl') !== -1 || lower.indexOf('fit') !== -1;
+
+  // Detect height from input (e.g. 6'3\", 5'10\")
+  var heightMatch = text.match(/(\d)'(\d{1,2})"/);
+  var height = heightMatch ? heightMatch[0] : "6'2\"";
+
+  // Detect torso ratio
+  var ratio = '70:30';
+  if (lower.indexOf('65:35') !== -1 || lower.indexOf('65 35') !== -1) ratio = '65:35';
+  else if (lower.indexOf('75:25') !== -1 || lower.indexOf('75 25') !== -1) ratio = '75:25';
+
+  var setting = '';
+  if (lower.indexOf('desierto') !== -1 || lower.indexOf('desert') !== -1) setting = 'dust storm, golden particles, harsh sunlight, heat haze';
+  else if (lower.indexOf('void') !== -1) setting = 'void — pure black, no objects, no floor, single brutal studio light';
+  else if (lower.indexOf('lluvia') !== -1 || lower.indexOf('rain') !== -1) setting = 'rain-soaked street, water droplets on skin, neon reflections';
+  else if (lower.indexOf('espacio') !== -1 || lower.indexOf('space') !== -1) setting = 'low Earth orbit, planet curvature, stars infinite, zero gravity floating';
+  else if (lower.indexOf('gimnasio') !== -1 || lower.indexOf('gym') !== -1) setting = 'industrial gym, iron weights, chalk dust, fluorescent overhead';
+  else setting = 'void — pure black, no objects, no floor, single brutal studio light';
+
+  var clothing = '';
+  if (lower.indexOf('tactical') !== -1 || lower.indexOf('tactica') !== -1) clothing = 'tactical bikini armor, cross-back straps, female form under tension';
+  else if (lower.indexOf('bikini') !== -1) clothing = 'tactical bikini, female form under tension';
+  else if (lower.indexOf('mojada') !== -1 || lower.indexOf('wet') !== -1 || lower.indexOf('soaked') !== -1) clothing = 'casual wet clothing clinging to female form, soaked fabric, low-waist';
+  else if (lower.indexOf('duster') !== -1) clothing = 'long leather duster jacket over female frame';
+  else clothing = 'minimal tactical gear, female form';
+
+  var light = '';
+  if (lower.indexOf('45') !== -1) light = 'hard 45° light creating razor shadows across abs';
+  else if (lower.indexOf('side') !== -1 || lower.indexOf('lateral') !== -1) light = 'dramatic side lighting, split face shadow';
+  else if (lower.indexOf('back') !== -1 || lower.indexOf('trasera') !== -1) light = 'strong backlight, silhouette edges glowing';
+  else light = 'hard 45° light creating razor shadows across abs';
+
+  var parts = [];
+  if (actress) { parts.push("Cinematic full-body portrait of " + actress + ", female, " + height + " extreme torso elongation " + ratio); }
+  else if (hasFemale) { parts.push("Cinematic full-body portrait of female figure, " + height + " extreme torso elongation " + ratio); }
+  else { parts.push("Cinematic full-body portrait of female figure, " + height + " extreme torso elongation " + ratio); }
+
+  if (brutal) { parts.push('low-waist exposing full brutal 8-pack rectus abdominis with deep separations, serratus anterior fingers, oblique ridges, vascular lower abdomens, pores visible, sweat beads, skin texture max, no smoothing'); }
+  else if (athletic) { parts.push('low-waist exposing defined rectus abdominis, serratus visible, athletic female build, real skin texture'); }
+  else { parts.push('low-waist, defined female midsection, real skin grain'); }
+
+  parts.push(clothing);
+  parts.push(setting);
+  parts.push(light + ', no fill light');
+  parts.push('Shot on ARRI Alexa 65 with Cooke S7i 50mm, f/2.8, photorealistic, desaturated');
+
+  var prompt = parts.join(', ') + ' --ar 9:20 --raw --stylize 250 --c 15 --v 8.1';
+
+  var promptWords = prompt.split(/\s+/);
+  var physWords = ['abs','abdominis','musculature','torso','physique','oblique','serratus','rectus'];
+  var physIndex = -1;
+  for (var i = 0; i < Math.min(15, promptWords.length); i++) {
+    if (physWords.some(function(p) { return promptWords[i].toLowerCase().indexOf(p) !== -1; })) {
+      physIndex = i;
+      break;
+    }
+  }
+  var physiqueFirst = physIndex !== -1 && physIndex < 10;
+
+  return { prompt: prompt, tokens: promptWords.length, physiqueFirst: physiqueFirst };
+}
+
+// ============================================================
+// BUILDER
+// ============================================================
+function buildFromBuilder() {
+  var parts = [];
+  var meta = [];
+  var qty = parseInt(document.getElementById('subjQty').value);
+  var phys = document.getElementById('subjPhys').value;
+  var ratio = document.getElementById('subjRatio').value;
+  var height = document.getElementById('subjHeight').value;
+  var names = [];
+  var subj1Name = document.getElementById('subj1Actress').value;
+  var subj1Char = document.getElementById('subj1Char').value;
+  if (subj1Char !== 'Original') subj1Name += ' as ' + subj1Char;
+  names.push(subj1Name);
+  if (qty >= 2) {
+    var subj2Name = document.getElementById('subj2Actress').value;
+    var subj2Char = document.getElementById('subj2Char').value;
+    if (subj2Char !== 'Original') subj2Name += ' as ' + subj2Char;
+    names.push(subj2Name);
+  }
+  var nameStr;
+  if (qty === 1) { nameStr = names[0]; }
+  else if (qty === 2) { nameStr = names[0] + ' and ' + names[1]; }
+  else { nameStr = names[0] + ' leading a group of ' + qty; }
+  parts.push('Cinematic full-body portrait of ' + nameStr + ', female, ' + height + ' extreme torso elongation ' + ratio);
+  if (phys === 'Brutal defined') { parts.push('low-waist exposing full brutal 8-pack rectus abdominis with deep separations, serratus anterior fingers, oblique ridges, vascular lower abdomens, pores visible, sweat beads, skin texture max, no smoothing'); }
+  else if (phys === 'Athletic') { parts.push('low-waist exposing defined rectus abdominis, serratus visible, athletic build, real skin texture'); }
+  else { parts.push('low-waist, defined midsection, real skin grain'); }
+  meta.push(nameStr + ' | ' + phys);
+  var base = document.getElementById('clothBase').value;
+  var color = document.getElementById('clothColor').value;
+  var emblem = document.getElementById('clothEmblem').value;
+  var mat = document.getElementById('clothMat').value;
+  var state = document.getElementById('clothState').value;
+  var clothDesc = color + ' ' + state + ' ' + mat + ' ' + base;
+  if (emblem !== 'None') clothDesc += ' with ' + emblem + ' emblem';
+  parts.push(clothDesc);
+  meta.push(base + ' | ' + color);
+  var pos = document.getElementById('intPos').value;
+  var contact = document.getElementById('intContact').value;
+  var gaze = document.getElementById('intGaze').value;
+  var expr = document.getElementById('intExpr').value;
+  if (qty >= 2 && pos !== 'Solo') { parts.push('standing ' + pos.toLowerCase() + ', ' + contact.toLowerCase() + ', ' + gaze.toLowerCase() + ' gaze, ' + expr.toLowerCase() + ' expression'); meta.push(pos + ' | ' + expr); }
+  var env = document.getElementById('bgEnv').value;
+  var time = document.getElementById('bgTime').value;
+  var weather = document.getElementById('bgWeather').value;
+  var light = document.getElementById('bgLight').value;
+  parts.push(time.toLowerCase() + ' ' + weather.toLowerCase() + ' ' + env.toLowerCase() + ', ' + light.toLowerCase() + ' light creating razor shadows, no fill');
+  meta.push(env + ' | ' + light);
+  var dist = document.getElementById('camDist').value;
+  var lens = document.getElementById('camLens').value;
+  var ap = document.getElementById('camAperture').value;
+  var ang = document.getElementById('camAngle').value;
+  var st = document.getElementById('camStylize').value;
+  parts.push('Shot on ARRI Alexa 65 with Cooke S7i ' + lens + ', ' + ap + ', ' + dist.toLowerCase() + ', ' + ang.toLowerCase() + ' angle, photorealistic');
+  meta.push('s' + st);
+  var aChips = document.querySelectorAll('#artifactChips .chip.active');
+  var artifacts = [];
+  for (var i = 0; i < aChips.length; i++) artifacts.push(aChips[i].textContent);
+  if (artifacts.length > 0) { parts.push('holding ' + artifacts.join(', ')); }
+  var prompt = parts.join(', ') + ' --ar 9:20 --raw --stylize ' + st + ' --c 15 --v 8.1';
+  var tokenCount = prompt.split(/\s+/).length;
+  var box = document.getElementById('builderResult');
+  box.innerHTML = '';
+  var card = document.createElement('div');
+  card.className = 'prompt-card';
+  var metaDiv = document.createElement('div');
+  metaDiv.className = 'meta';
+  var m1 = document.createElement('span'); m1.textContent = 'Builder Output';
+  var m2 = document.createElement('span'); m2.textContent = '~' + tokenCount + ' tokens';
+  metaDiv.appendChild(m1); metaDiv.appendChild(m2);
+  var promptDiv = document.createElement('div');
+  promptDiv.className = 'prompt-text';
+  promptDiv.textContent = prompt;
+  var actions = document.createElement('div');
+  actions.className = 'actions';
+  var copyBtn = document.createElement('button'); copyBtn.className = 'btn btn-copy'; copyBtn.textContent = 'Copy'; copyBtn.onclick = function() { copyText(prompt); };
+  var winBtn = document.createElement('button'); winBtn.className = 'btn btn-win'; winBtn.textContent = '✅'; winBtn.onclick = function() { logNative(prompt, 'win'); };
+  var failBtn = document.createElement('button'); failBtn.className = 'btn btn-fail'; failBtn.textContent = '❌'; failBtn.onclick = function() { logNative(prompt, 'fail'); };
+  actions.appendChild(copyBtn); actions.appendChild(winBtn); actions.appendChild(failBtn);
+  card.appendChild(metaDiv); card.appendChild(promptDiv); card.appendChild(actions);
+  box.appendChild(card);
+}
+
+// ============================================================
+// GENERATE (Vars)
+// ============================================================
+function getMultiActive(id) {
+  var grid = document.getElementById(id);
+  if (!grid) return [];
+  var actives = grid.querySelectorAll('.chip.active');
+  var vals = [];
+  for (var i = 0; i < actives.length; i++) vals.push(actives[i].textContent);
+  return vals;
+}
+
+function getSingleActive(id) {
+  var grid = document.getElementById(id);
+  if (!grid) return null;
+  var active = grid.querySelector('.chip.active');
+  return active ? active.textContent : null;
+}
+
+function pickRandom(arr) {
+  if (!arr || arr.length === 0) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generate() {
+  var base = document.getElementById('basePrompt').value.trim();
+  if (!base) { showToast('No prompt'); return; }
+  var brutal = document.getElementById('brutalMode').checked;
+  var arL = document.getElementById('arLock').checked;
+  var kimi = document.getElementById('kimiMode').checked;
+  var n = parseInt(document.getElementById('varCount').value) || 4;
+  var actresses = getMultiActive('actressChips');
+  var phys = getSingleActive('physChips') || 'Brutal defined';
+  var cloths = getMultiActive('clothingChips');
+  var settings = getMultiActive('settingChips');
+  var lights = getMultiActive('lightingChips');
+  var c = getSingleActive('chaosChips') || '15';
+  var st = getSingleActive('stylizeChips') || '80';
+  var results = [];
+  for (var i = 0; i < n; i++) {
+    var p = base;
+    var actress = pickRandom(actresses);
+    var clothing = pickRandom(cloths);
+    var setting = pickRandom(settings);
+    var light = pickRandom(lights);
+    var changed = [];
+    var physText = '';
+    if (phys === 'Brutal defined') { physText = 'hyper-exaggerated visible musculature, defined rectus abdominis with deep separations, serratus anterior fingers, oblique ridges, vascular lower abdomens, pores visible, sweat beads, skin texture max, no smoothing'; }
+    else if (phys === 'Athletic') { physText = 'low-waist exposing defined rectus abdominis, serratus visible, athletic build, real skin texture'; }
+    else if (phys === 'Brutal lite') { physText = 'defined abs, athletic build, real skin texture'; }
+    else { physText = 'low-waist, defined midsection, real skin grain'; }
+    if (p.indexOf('abs') === -1 && p.indexOf('musculature') === -1) { p += ', ' + physText; changed.push(phys); }
+    if (actress) { var desc = ACTRESS_DESC[actress] || ''; p += ', ' + actress + (desc ? ' — ' + desc : ''); changed.push(actress.split(' ')[0]); }
+    if (clothing) { p += ', ' + clothing; changed.push(clothing); }
+    if (setting) { p += ', ' + setting; changed.push(setting); }
+    if (light) { p += ', ' + light; changed.push(light); }
+    if (kimi) { p = optimizeKimi(p); }
+    var ar = arL ? ' --ar 9:20' : '';
+    p += ' --raw --s ' + st + ' --c ' + c + ar + ' --v 8.1';
+    results.push({ id: Date.now() + i, prompt: p, changed: changed.join(', ') || 'Base+Params', chaos: c, stylize: st, time: new Date().toISOString() });
+  }
+  renderResults(results);
+}
+
+function optimizeKimi(prompt) {
+  var physiqueWords = ['abs','musculature','torso','rectus','serratus','oblique','vascular'];
+  var hasPhysique = false;
+  for (var i = 0; i < physiqueWords.length; i++) { if (prompt.indexOf(physiqueWords[i]) !== -1) { hasPhysique = true; break; } }
+  if (!hasPhysique) { prompt = 'Cinematic full-body portrait with hyper-defined visible musculature, female figure, ' + prompt; }
+  else {
+    // Ensure female is in the prompt if not already
+    var lower = prompt.toLowerCase();
+    var femaleWords = ['female','woman','mujer','chica','girl'];
+    var hasFemale = femaleWords.some(function(w) { return lower.indexOf(w) !== -1; });
+    if (!hasFemale) { prompt = 'Cinematic full-body portrait of female figure, ' + prompt; }
+  }
+  prompt = prompt.replace(/,\s*,/g, ',').replace(/,\s*$/g, '');
+  return prompt;
+}
+
+function renderResults(results) {
+  var box = document.getElementById('results');
+  box.innerHTML = '<span class="label">Prompts</span>';
+  for (var i = 0; i < results.length; i++) {
+    var r = results[i];
+    var card = document.createElement('div');
+    card.className = 'prompt-card';
+    card.innerHTML =
+      '<div class="meta"><span>Var ' + (i + 1) + '</span><span style="color:var(--warn);font-weight:700">' + esc(r.changed) + '</span></div>' +
+      '<div class="prompt-text" id="prompt-' + r.id + '">' + esc(r.prompt) + '</div>' +
+      '<div class="actions">' +
+      '<button class="btn btn-copy" onclick="copyPrompt(' + r.id + ')">Copy</button>' +
+      '<button class="btn btn-win" onclick="logResult(' + r.id + ', \'win\')">✅</button>' +
+      '<button class="btn btn-fail" onclick="logResult(' + r.id + ', \'fail\')">❌</button>' +
+      '</div>';
+    box.appendChild(card);
+  }
+  for (var j = 0; j < results.length; j++) { exps.unshift(results[j]); }
+  save();
+  showToast(results.length + ' ready');
+}
+
+function esc(t) {
+  if (!t) return '';
+  return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function copyPrompt(id) {
+  var exp = exps.find(function(e) { return e.id === id; });
+  if (!exp) return;
+  copyText(exp.prompt);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copied');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied');
+  });
+}
+
+function logResult(id, status) {
+  var exp = exps.find(function(e) { return e.id === id; });
+  if (exp) { exp.status = status; exp.loggedAt = new Date().toISOString(); save(); showToast(status === 'win' ? 'Wujuuuu!' : 'Baneado'); }
+}
+
+function logNative(prompt, status) {
+  var item = { id: Date.now(), prompt: prompt, changed: 'Kimi Native', status: status, chaos: '15', stylize: '250', time: new Date().toISOString(), loggedAt: new Date().toISOString() };
+  exps.unshift(item);
+  save();
+  showToast(status === 'win' ? 'Wujuuuu!' : 'Baneado');
+}
+
+function save() {
+  localStorage.setItem('vlpro', JSON.stringify(exps.slice(0, 200)));
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+// ============================================================
+// LOG
+// ============================================================
+function renderLog() {
+  var box = document.getElementById('logList');
+  if (!exps.length) { box.innerHTML = '<div class="empty"><div class="icon">📝</div>No experiments yet</div>'; return; }
+  box.innerHTML = '';
+  var slice = exps.slice(0, 50);
+  for (var i = 0; i < slice.length; i++) {
+    var e = slice[i];
+    var d = document.createElement('div');
+    d.className = 'log-item';
+    var st = e.status || 'untested';
+    var dotClass = st === 'win' ? 'win' : st === 'fail' ? 'fail' : '';
+    var dateStr = new Date(e.time).toLocaleDateString();
+    var isKimi = e.changed === 'Kimi Native';
+    var isMixer = (e.changed || '').indexOf('Mixer') === 0;
+    d.innerHTML =
+      '<div class="status-dot ' + dotClass + '"></div>' +
+      '<div class="info"><div class="title">' + esc(e.changed || 'Base') + (isKimi ? ' <span style="color:var(--kimi)">[K]</span>' : '') + (isMixer ? ' <span style="color:#ff9933">[🧱]</span>' : '') + '</div>' +
+      '<div class="date">' + dateStr + ' · c' + e.chaos + ' s' + e.stylize + '</div></div>' +
+      '<div style="display:flex;gap:6px">' +
+      '<button class="btn" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text)" onclick="copyLogPrompt(' + e.id + ')">Copy</button>' +
+      (e.status ? '' : '<button class="btn" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--accent2);color:var(--accent2)" onclick="logResult(' + e.id + ', \'win\')">✅</button><button class="btn" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--accent);color:var(--accent)" onclick="logResult(' + e.id + ', \'fail\')">❌</button>') +
+      '</div>';
+    box.appendChild(d);
+  }
+}
+
+function copyLogPrompt(id) {
+  var exp = exps.find(function(e) { return e.id === id; });
+  if (exp) copyText(exp.prompt);
+}
+
+// ============================================================
+// COMPARE
+// ============================================================
+function renderCompare() {
+  var box = document.getElementById('compareList');
+  sel = [];
+  document.getElementById('compareBtn').style.display = 'none';
+  document.getElementById('compareResult').innerHTML = '';
+  if (!exps.length) { box.innerHTML = '<div class="empty"><div class="icon">⚖️</div>Nothing to compare</div>'; return; }
+  box.innerHTML = '<span class="label" style="margin-top:0">Tap to select (2-4)</span>';
+  var slice = exps.slice(0, 20);
+  for (var i = 0; i < slice.length; i++) {
+    var e = slice[i];
+    var d = document.createElement('div');
+    d.className = 'compare-item';
+    d.dataset.id = e.id;
+    var isKimi = e.changed === 'Kimi Native';
+    d.innerHTML =
+      '<div style="font-size:12px;color:var(--text2);margin-bottom:4px">' + esc(e.changed || 'Base') + (isKimi ? ' <span style="color:var(--kimi)">[K]</span>' : '') + '</div>' +
+      '<div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc((e.prompt || '').substring(0, 60)) + '...</div>';
+    d.addEventListener('click', function() {
+      var id = parseInt(this.dataset.id);
+      this.classList.toggle('selected');
+      if (this.classList.contains('selected')) { sel.push(id); }
+      else { sel = sel.filter(function(x) { return x !== id; }); }
+      document.getElementById('compareBtn').style.display = sel.length >= 2 ? 'flex' : 'none';
+    });
+    box.appendChild(d);
+  }
+}
+
+function runCompare() {
+  var selected = exps.filter(function(e) { return sel.indexOf(e.id) !== -1; });
+  var box = document.getElementById('compareResult');
+  box.innerHTML = '<span class="label">Side by Side</span>';
+  for (var i = 0; i < selected.length; i++) {
+    var e = selected[i];
+    var d = document.createElement('div');
+    d.className = 'prompt-card';
+    var isKimi = e.changed === 'Kimi Native';
+    d.innerHTML =
+      '<div class="meta"><span>' + esc(e.changed || 'Base') + (isKimi ? ' <span style="color:var(--kimi)">[K]</span>' : '') + '</span><span>c' + e.chaos + ' s' + e.stylize + '</span></div>' +
+      '<div class="prompt-text">' + esc(e.prompt || '') + '</div>' +
+      '<button class="btn btn-copy" style="margin-top:10px" onclick="copyText(\'' + esc((e.prompt || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")) + '\')">Copy This</button>';
+    box.appendChild(d);
+  }
+}
+
+
+// ============================================================
+// CAV — Camera & Visual Recipe Engine v1.0
+// ============================================================
+var CLOUD_CONFIG_KEY = 'vlpro_cloud';
+
+function getCloudConfig() {
+  try { return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function saveCloudConfig() {
+  var cfg = {
+    enabled: document.getElementById('cloudToggle').checked,
+    url: document.getElementById('backendUrl').value.trim(),
+    secret: document.getElementById('apiSecret').value.trim()
+  };
+  localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(cfg));
+  showToast(cfg.enabled ? 'Cloud mode ON' : 'Cloud mode OFF');
+}
+
+function loadCloudConfig() {
+  var cfg = getCloudConfig();
+  document.getElementById('cloudToggle').checked = !!cfg.enabled;
+  document.getElementById('backendUrl').value = cfg.url || '';
+  document.getElementById('apiSecret').value = cfg.secret || '';
+}
+
+function isCloudMode() {
+  var cfg = getCloudConfig();
+  return !!(cfg.enabled && cfg.url && cfg.secret);
+}
+
+async function apiCall(endpoint, body) {
+  var cfg = getCloudConfig();
+  var url = cfg.url.replace(/\/+$/, '') + endpoint;
+  try {
+    var resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': cfg.secret
+      },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) {
+      var err = await resp.text();
+      throw new Error('HTTP ' + resp.status + ': ' + err);
+    }
+    return await resp.json();
+  } catch(e) {
+    showToast('Cloud error: ' + e.message);
+    throw e;
+  }
+}
+
+async function testConnection() {
+  var cfg = getCloudConfig();
+  if (!cfg.url || !cfg.secret) { showToast('Fill URL and Secret first'); return; }
+  showToast('Testing...');
+  try {
+    var resp = await fetch(cfg.url.replace(/\/+$/, '') + '/health');
+    var data = await resp.json();
+    document.getElementById('connResult').innerHTML = '<div class="tip-box" style="border-color:var(--accent2)"><k>OK:</k> Backend ' + (data.kimi_configured ? 'ready + LLM connected' : 'ready but NO API key') + '</div>';
+  } catch(e) {
+    document.getElementById('connResult').innerHTML = '<div class="tip-box" style="border-color:var(--accent)"><k>FAIL:</k> ' + e.message + '</div>';
+  }
+}
+
+// Load config on startup
+loadCloudConfig();
+
+// CAV — Camera & Visual Recipe Engine v1.0
+var CAV_RECIPES = {
+  version: "1.0.0",
+  categories: [
+    { id: "framing", name: "Framing / Plano", max: 1, tokens: [
+      {t: "extreme close-up", d: "5-30cm, microscopic detail"},
+      {t: "close-up portrait", d: "50cm-1.5m, microexpressions"},
+      {t: "medium close-up", d: "1.5-2.5m, chest up"},
+      {t: "medium shot", d: "2-4m, waist up, editorial"},
+      {t: "cowboy shot", d: "3-5m, thighs up, action"},
+      {t: "full body shot", d: "5-10m, complete anatomy"},
+      {t: "extreme wide shot", d: ">15m, epic scale"},
+      {t: "over-the-shoulder shot", d: "dialogue, POV"}
+    ]},
+    { id: "angle", name: "Camera Angle", max: 1, tokens: [
+      {t: "eye level shot", d: "neutral documentary"},
+      {t: "low angle shot", d: "power, monumental"},
+      {t: "high angle shot", d: "vulnerability"},
+      {t: "overhead shot", d: "pattern, symmetry"},
+      {t: "dutch angle", d: "tension, thriller"},
+      {t: "three-quarter view", d: "flattering volume"},
+      {t: "profile shot", d: "silhouette, artistic"},
+      {t: "worm's eye view", d: "extreme low, distortion"}
+    ]},
+    { id: "position", name: "Subject Position", max: 2, tokens: [
+      {t: "subject on left third", d: "lead room right"},
+      {t: "centered subject", d: "symmetry"},
+      {t: "subject far left", d: "tension"},
+      {t: "subject at top of frame", d: "elevation"},
+      {t: "subject at bottom of frame", d: "smallness"},
+      {t: "subject in foreground", d: "immersion"},
+      {t: "subject in midground", d: "layered"},
+      {t: "depth of field separation", d: "clean planes"},
+      {t: "foreground bokeh framing", d: "natural frame"}
+    ]},
+    { id: "pose", name: "Pose / Postura", max: 2, tokens: [
+      {t: "relaxed standing, weight shifted to one hip", d: "natural asymmetry"},
+      {t: "hands on hips, confident posture", d: "power"},
+      {t: "walking mid-stride, candid", d: "movement"},
+      {t: "crouching, knees bent", d: "preparation"},
+      {t: "arms crossed, defensive posture", d: "authority"},
+      {t: "arms open, expansive gesture", d: "inclusion"},
+      {t: "leaning against wall, casual", d: "relaxed tension"},
+      {t: "seated on ground, knees up", d: "vulnerable openness"}
+    ]},
+    { id: "expression", name: "Expression / Micro", max: 2, tokens: [
+      {t: "slight chin down, eyes up", d: "intense, sensual"},
+      {t: "chin up, looking down at camera", d: "superiority"},
+      {t: "subtle smile, eyes crinkling", d: "Duchenne, authentic"},
+      {t: "slight smirk, asymmetric", d: "irony, defiant"},
+      {t: "intense gaze, slightly furrowed brow", d: "concentration"},
+      {t: "raw emotion, tears forming", d: "vulnerability"},
+      {t: "neutral expression, mouth closed", d: "contemplative"},
+      {t: "parted lips, soft breathing", d: "intimacy"}
+    ]},
+    { id: "lighting", name: "Lighting", max: 2, tokens: [
+      {t: "hard 45° sun", d: "razor shadows, muscle sculpt"},
+      {t: "golden hour backlight", d: "warm rim separation"},
+      {t: "moonlight blue", d: "cool, mystery"},
+      {t: "neon cold", d: "urban, cyberpunk"},
+      {t: "volumetric fog light", d: "beams, atmosphere"},
+      {t: "rim light red", d: "edge glow, dramatic"},
+      {t: "split face shadow", d: "50/50 contrast"},
+      {t: "cenital spotlight", d: "top-down isolation"},
+      {t: "softbox diffused", d: "beauty, clean"},
+      {t: "side light 45", d: "Rembrandt, volume"},
+      {t: "backlight silhouette", d: "shape separation"}
+    ]},
+    { id: "effects", name: "Effects", max: 2, tokens: [
+      {t: "shallow depth of field", d: "bokeh dissolution"},
+      {t: "bokeh circles", d: "specular orbs"},
+      {t: "lens flare anamorphic", d: "horizontal streak"},
+      {t: "motion blur on background", d: "kinetic energy"},
+      {t: "dust particles in light beams", d: "atmosphere"},
+      {t: "water droplets on lens", d: "rain immersion"},
+      {t: "film grain texture", d: "analog authentic"},
+      {t: "haze atmospheric", d: "depth, dream"}
+    ]},
+    { id: "textures", name: "Textures", max: 2, tokens: [
+      {t: "pores visible, skin texture max", d: "skin micro"},
+      {t: "sweat beads, skin wet", d: "athletic"},
+      {t: "fabric tension lines", d: "body mapping"},
+      {t: "wet fabric clinging", d: "weight, gravity"},
+      {t: "wrinkled leather grain", d: "age, wear"},
+      {t: "carbon fiber weave", d: "technical"}
+    ]},
+    { id: "cinematic", name: "Cinematic", max: 1, tokens: [
+      {t: "shot on ARRI Alexa 65", d: "clean modern"},
+      {t: "Cooke S7i lens", d: "warm cinematic"},
+      {t: "anamorphic lens", d: "horizontal stretch"},
+      {t: "Panavision Primo", d: "Hollywood classic"},
+      {t: "Zeiss Master Prime", d: "clinical sharp"},
+      {t: "film grain 35mm", d: "analog texture"},
+      {t: "color graded teal-orange", d: "blockbuster"},
+      {t: "2.39:1 letterbox", d: "widescreen"}
+    ]},
+    { id: "photographic", name: "Photographic", max: 1, tokens: [
+      {t: "shot on Hasselblad 500CM, medium format film", d: "rich depth"},
+      {t: "shot on Leica M6, 35mm film", d: "classic grain"},
+      {t: "shot on Phase One XF IQ4, 150MP", d: "clinical clarity"},
+      {t: "Kodak Portra 400 film stock", d: "warm skin"},
+      {t: "Fuji Velvia 50 film stock", d: "saturated nature"},
+      {t: "Ilford HP5 black and white film", d: "pronounced grain"},
+      {t: "Polaroid 600", d: "nostalgia"},
+      {t: "large format 8x10", d: "maximum detail"}
+    ]},
+    { id: "lens", name: "Lens", max: 1, tokens: [
+      {t: "14mm ultra-wide lens", d: "dilation, distortion"},
+      {t: "24mm wide angle", d: "expanded field"},
+      {t: "35mm lens", d: "street photography"},
+      {t: "50mm standard lens", d: "neutral perspective"},
+      {t: "85mm portrait lens", d: "compression, bokeh"},
+      {t: "135mm lens", d: "extreme compression"},
+      {t: "100mm macro lens", d: "microscopic topography"}
+    ]}
+  ],
+  packs: [
+    { name: "Brutal Physique", tokens: ["hard 45° sun", "close-up portrait", "shallow depth of field", "pores visible, skin texture max"] },
+    { name: "Cinematic Void", tokens: ["eye level shot", "centered subject", "softbox diffused", "shot on ARRI Alexa 65"] },
+    { name: "Street Night", tokens: ["neon cold", "35mm lens", "shot on Leica M6, 35mm film", "high angle shot"] },
+    { name: "Golden Epic", tokens: ["golden hour backlight", "full body shot", "shot on Hasselblad 500CM, medium format film", "dust particles in light beams"] }
+  ]
+};
+
+function injectCAVCSS() {
+  var style = document.createElement('style');
+  style.textContent = `
+    .cav-panel{margin:16px 0;padding:16px;background:var(--surface);border-radius:12px;border:1px solid var(--border)}
+    .cav-cat{margin:10px 0;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
+    .cav-cat-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+    .cav-cat-title .toggle-btn{font-size:14px;color:var(--accent3);cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:var(--surface3);border-radius:6px}
+    .cav-chip{padding:8px 14px;background:var(--surface3);border:2px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;user-select:none;color:var(--text2);font-weight:500;margin:4px;display:inline-block}
+    .cav-chip.active{background:var(--accent3);border-color:var(--accent3);color:#fff;font-weight:700}
+    .cav-chip.pack{background:var(--surface3);border-color:var(--warn);color:var(--warn)}
+    .cav-chip.pack.active{background:var(--warn);color:#000}
+    .cav-preview{font-size:12px;color:var(--text3);background:var(--surface2);border-radius:6px;padding:10px;margin:10px 0;font-family:monospace;line-height:1.5;min-height:32px}
+    .cav-badge{font-size:9px;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;border:1px solid var(--accent3);padding:1px 6px;border-radius:6px;margin-left:6px}
+    .cav-apply{background:var(--accent3);color:#fff;width:100%;margin:10px 0;padding:14px;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer}
+    .cav-clear{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:8px 16px;font-size:13px;border-radius:10px;cursor:pointer;margin-left:8px}
+    .cav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .cav-count{font-size:11px;color:var(--text3)}
+  `;
+  document.head.appendChild(style);
+}
+
+function renderCAVCategory(cat, container, selectedSet) {
+  var div = document.createElement('div');
+  div.className = 'cav-cat';
+  div.id = 'cavcat-' + cat.id;
+  var title = document.createElement('div');
+  title.className = 'cav-cat-title';
+  title.innerHTML = '<span>' + esc(cat.name) + ' <span class="cav-count">(max ' + cat.max + ')</span></span><span class="toggle-btn" onclick="toggleCat(\'cavcat-' + cat.id + '\')">−</span>';
+  div.appendChild(title);
+  var body = document.createElement('div');
+  body.className = 'cat-body';
+  body.id = 'cavcat-' + cat.id + '-body';
+  var grid = document.createElement('div');
+  grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:6px';
+  cat.tokens.forEach(function(tok) {
+    var chip = document.createElement('span');
+    chip.className = 'cav-chip';
+    chip.textContent = tok.t;
+    chip.title = tok.d;
+    chip.dataset.token = tok.t;
+    chip.dataset.cat = cat.id;
+    chip.dataset.max = cat.max;
+    chip.onclick = function() {
+      var catId = this.dataset.cat;
+      var max = parseInt(this.dataset.max);
+      var siblings = this.parentElement.querySelectorAll('.cav-chip[data-cat="' + catId + '"].active');
+      if (this.classList.contains('active')) {
+        this.classList.remove('active');
+        selectedSet.delete(this.dataset.token);
+      } else {
+        if (siblings.length >= max) {
+          siblings[0].classList.remove('active');
+          selectedSet.delete(siblings[0].dataset.token);
+        }
+        this.classList.add('active');
+        selectedSet.add(this.dataset.token);
+      }
+      updateCAVPreview();
+    };
+    grid.appendChild(chip);
+  });
+  body.appendChild(grid);
+  div.appendChild(body);
+  container.appendChild(div);
+}
+
+function renderCAVPacks(container, selectedSet) {
+  var div = document.createElement('div');
+  div.className = 'cav-cat';
+  div.style.borderColor = 'var(--warn)';
+  var title = document.createElement('div');
+  title.className = 'cav-cat-title';
+  title.innerHTML = '<span>🔥 Quick Packs <span class="cav-count">(one-click combos)</span></span>';
+  div.appendChild(title);
+  var grid = document.createElement('div');
+  grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:6px';
+  CAV_RECIPES.packs.forEach(function(pack) {
+    var chip = document.createElement('span');
+    chip.className = 'cav-chip pack';
+    chip.textContent = pack.name;
+    chip.title = pack.tokens.join(' + ');
+    chip.onclick = function() {
+      document.querySelectorAll('.cav-chip.active').forEach(function(c) {
+        c.classList.remove('active');
+        selectedSet.delete(c.dataset.token);
+      });
+      pack.tokens.forEach(function(t) {
+        var el = document.querySelector('.cav-chip[data-token="' + t.replace(/"/g, '\\"') + '"]');
+        if (el) { el.classList.add('active'); selectedSet.add(t); }
+      });
+      updateCAVPreview();
+    };
+    grid.appendChild(chip);
+  });
+  div.appendChild(grid);
+  container.appendChild(div);
+}
+
+var CAV_SELECTED = new Set();
+
+function buildCAVPanel(containerId, previewId) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  var header = document.createElement('div');
+  header.className = 'cav-row';
+  header.innerHTML = '<span style="font-size:13px;font-weight:700;color:var(--accent3)">🎬 CAV Recipe Engine <span class="cav-badge">v1</span></span>';
+  container.appendChild(header);
+  var tip = document.createElement('div');
+  tip.className = 'builder-help';
+  tip.textContent = 'Pick 1 Framing + 1 Angle + 1 Lighting. Max 4 tokens. Less is more.';
+  container.appendChild(tip);
+  renderCAVPacks(container, CAV_SELECTED);
+  CAV_RECIPES.categories.forEach(function(cat) {
+    renderCAVCategory(cat, container, CAV_SELECTED);
+  });
+  var preview = document.createElement('div');
+  preview.className = 'cav-preview';
+  preview.id = previewId || 'cav-preview-' + containerId;
+  preview.textContent = '(no tokens selected)';
+  container.appendChild(preview);
+  var btnRow = document.createElement('div');
+  btnRow.style.display = 'flex';
+  var apply = document.createElement('button');
+  apply.className = 'cav-apply';
+  apply.textContent = 'Apply Recipe to Prompt';
+  apply.onclick = function() { applyCAVRecipe(); };
+  var clear = document.createElement('button');
+  clear.className = 'cav-clear';
+  clear.textContent = 'Clear';
+  clear.onclick = function() {
+    CAV_SELECTED.clear();
+    document.querySelectorAll('.cav-chip.active').forEach(function(c) { c.classList.remove('active'); });
+    updateCAVPreview();
+  };
+  btnRow.appendChild(apply);
+  btnRow.appendChild(clear);
+  container.appendChild(btnRow);
+}
+
+function updateCAVPreview() {
+  var els = document.querySelectorAll('.cav-preview');
+  var txt = CAV_SELECTED.size ? Array.from(CAV_SELECTED).join(', ') : '(no tokens selected)';
+  els.forEach(function(el) { el.textContent = txt; });
+}
+
+function applyCAVRecipe() {
+  if (CAV_SELECTED.size === 0) { showToast('Select tokens first'); return; }
+  var tokens = Array.from(CAV_SELECTED).join(', ');
+  var activeTab = document.querySelector('.section.active');
+  var tabId = activeTab ? activeTab.id : 'forge';
+  var target = null;
+  
+  if (tabId === 'forge') {
+    target = document.getElementById('basePrompt');
+  } else if (tabId === 'native') {
+    var resultDiv = document.getElementById('nativeResult');
+    var resultText = resultDiv.querySelector('.prompt-text');
+    if (resultText) { target = {value: resultText.textContent, isText: true, el: resultText}; }
+    else { target = document.getElementById('nativeInput'); }
+  } else if (tabId === 'builder') {
+    var resultDiv = document.getElementById('builderResult');
+    var resultText = resultDiv.querySelector('.prompt-text');
+    if (resultText) { target = {value: resultText.textContent, isText: true, el: resultText}; }
+  } else if (tabId === 'vars') {
+    var cards = document.querySelectorAll('#results .prompt-text');
+    if (cards.length) {
+      cards.forEach(function(card) {
+        var prompt = card.textContent;
+        var paramIdx = prompt.indexOf(' --');
+        var newPrompt = paramIdx > -1 ? prompt.slice(0, paramIdx) + ', ' + tokens + prompt.slice(paramIdx) : prompt + ', ' + tokens;
+        card.textContent = newPrompt;
+      });
+      showToast('Recipe applied to ' + cards.length + ' prompts');
+      return;
+    }
+  } else if (tabId === 'blocks') {
+    target = document.getElementById('mixedOutput');
+  }
+  
+  if (!target) { showToast('No prompt to enhance'); return; }
+  var val = target.isText ? target.value : target.value;
+  if (!val || !val.trim()) { showToast('No prompt to enhance'); return; }
+  var paramIdx = val.indexOf(' --');
+  var newVal = paramIdx > -1 ? val.slice(0, paramIdx) + ', ' + tokens + val.slice(paramIdx) : val + ', ' + tokens;
+  if (target.isText) { target.el.textContent = newVal; }
+  else { target.value = newVal; }
+  showToast('CAV recipe applied (' + CAV_SELECTED.size + ' tokens)');
+}
+
+function injectCAVPanels() {
+  var forge = document.getElementById('forge');
+  var forgePanel = document.createElement('div');
+  forgePanel.id = 'cav-forge-panel';
+  forgePanel.className = 'cav-panel';
+  forge.appendChild(forgePanel);
+  buildCAVPanel('cav-forge-panel', 'cav-preview-forge');
+  
+  var builder = document.getElementById('builder');
+  var builderPanel = document.createElement('div');
+  builderPanel.id = 'cav-builder-panel';
+  builderPanel.className = 'cav-panel';
+  builderPanel.style.marginBottom = '80px';
+  var sticky = builder.querySelector('.sticky-actions');
+  if (sticky) builder.insertBefore(builderPanel, sticky);
+  else builder.appendChild(builderPanel);
+  buildCAVPanel('cav-builder-panel', 'cav-preview-builder');
+  
+  var blocks = document.getElementById('blocks');
+  var blocksPanel = document.createElement('div');
+  blocksPanel.id = 'cav-blocks-panel';
+  blocksPanel.className = 'cav-panel';
+  var mixedOut = document.getElementById('mixedOutput');
+  if (mixedOut) mixedOut.parentElement.insertBefore(blocksPanel, mixedOut);
+  else {
+    var mixer = document.getElementById('mixerPanel');
+    if (mixer) mixer.appendChild(blocksPanel);
+    else blocks.appendChild(blocksPanel);
+  }
+  buildCAVPanel('cav-blocks-panel', 'cav-preview-blocks');
+}
+
+injectCAVCSS();
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(injectCAVPanels, 100);
+});
+</script>
+</body>
+</html>
